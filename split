@@ -1,0 +1,894 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>出遊分錢</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="shared.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Kalam:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fdf6ec;
+    --card: #fffdf8;
+    --accent: #f0a500;
+    --accent2: #e07b00;
+    --green: #2e7d32;
+    --red: #c62828;
+    --blue: #1565c0;
+    --border: #2d2d2d;
+    --text: #1a1a1a;
+    --muted: #888;
+    --receipt: #fff9ee;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    font-family: 'Noto Sans TC', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── Top bar ── */
+  #topbar {
+    background: var(--accent);
+    border-bottom: 3px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  #topbar h1 {
+    font-family: 'Kalam', cursive;
+    font-size: 22px;
+    color: var(--border);
+    letter-spacing: 1px;
+  }
+  #tripNameDisplay {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--border);
+    opacity: 0.7;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  #syncStatus {
+    font-size: 11px;
+    color: var(--border);
+    opacity: 0.65;
+  }
+
+  /* ── Tab bar ── */
+  #tabs {
+    display: flex;
+    border-bottom: 3px solid var(--border);
+    background: #fff;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 10px 4px;
+    font-size: 13px;
+    font-weight: 900;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--muted);
+    border-bottom: 3px solid transparent;
+    margin-bottom: -3px;
+    transition: all 0.15s;
+  }
+  .tab-btn.active {
+    color: var(--accent2);
+    border-bottom-color: var(--accent2);
+  }
+
+  /* ── Main content ── */
+  #main { padding: 14px 14px 80px; max-width: 560px; margin: 0 auto; }
+
+  /* ── Section ── */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ── Members ── */
+  .member-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent);
+    border: 2px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-weight: 900;
+    font-size: 14px;
+    margin: 4px;
+  }
+  .member-chip .del {
+    cursor: pointer;
+    font-size: 12px;
+    opacity: 0.5;
+    line-height: 1;
+  }
+  .member-chip .del:hover { opacity: 1; }
+
+  /* ── Input row ── */
+  .input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .input-row input, .input-row select {
+    flex: 1;
+    border: 2.5px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 15px;
+    font-family: 'Noto Sans TC', sans-serif;
+    background: #fff;
+    outline: none;
+  }
+  .input-row input:focus, .input-row select:focus {
+    border-color: var(--accent2);
+  }
+  .btn {
+    border: 2.5px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 900;
+    font-family: 'Noto Sans TC', sans-serif;
+    cursor: pointer;
+    background: var(--card);
+    transition: all 0.1s;
+    box-shadow: 3px 3px 0 var(--border);
+    white-space: nowrap;
+  }
+  .btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--border); }
+  .btn-accent { background: var(--accent); }
+  .btn-green { background: #c8e6c9; color: var(--green); border-color: var(--green); box-shadow: 3px 3px 0 var(--green); }
+  .btn-red { background: #ffcdd2; color: var(--red); border-color: var(--red); box-shadow: 3px 3px 0 var(--red); }
+
+  /* ── Receipt card ── */
+  .receipt {
+    background: var(--receipt);
+    border: 2.5px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    box-shadow: 3px 3px 0 var(--border);
+    position: relative;
+  }
+  .receipt-header {
+    background: var(--accent);
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--border);
+  }
+  .receipt-title {
+    font-weight: 900;
+    font-size: 15px;
+    flex: 1;
+  }
+  .receipt-amount {
+    font-weight: 900;
+    font-size: 18px;
+    font-family: monospace;
+  }
+  .receipt-body { padding: 10px 14px; }
+  .receipt-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 2px 0;
+    color: var(--muted);
+  }
+  .receipt-row strong { color: var(--text); }
+  .receipt-tags { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
+  .tag {
+    background: #fff;
+    border: 1.5px solid #ddd;
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .tag.assigned { background: #e3f2fd; border-color: #90caf9; color: var(--blue); }
+  .receipt-del {
+    position: absolute;
+    top: 8px; right: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    opacity: 0.4;
+    line-height: 1;
+  }
+  .receipt-del:hover { opacity: 1; }
+
+  /* ── Split type ── */
+  .split-toggle {
+    display: flex;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .split-toggle label {
+    flex: 1;
+    text-align: center;
+    padding: 8px 4px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    background: #fff;
+    transition: background 0.15s;
+  }
+  .split-toggle input[type=radio] { display: none; }
+  .split-toggle input[type=radio]:checked + label {
+    background: var(--accent);
+    color: var(--border);
+  }
+
+  /* ── Custom split table ── */
+  .custom-split-table { width: 100%; margin: 8px 0; border-collapse: collapse; }
+  .custom-split-table td { padding: 4px 6px; font-size: 14px; }
+  .custom-split-table input {
+    width: 80px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 14px;
+    text-align: right;
+    font-family: monospace;
+  }
+  .custom-split-table input:focus { border-color: var(--accent2); outline: none; }
+  #customTotal { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+  #customTotal.ok { color: var(--green); font-weight: 900; }
+  #customTotal.over { color: var(--red); font-weight: 900; }
+
+  /* ── Result ── */
+  .result-card {
+    background: #fff;
+    border: 2.5px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    box-shadow: 3px 3px 0 var(--border);
+  }
+  .result-header {
+    background: #e8f5e9;
+    padding: 8px 14px;
+    font-weight: 900;
+    font-size: 14px;
+    border-bottom: 2px solid var(--border);
+    color: var(--green);
+  }
+  .result-row {
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .result-row:last-child { border-bottom: none; }
+  .result-arrow { color: var(--accent2); font-size: 16px; margin: 0 8px; }
+  .result-amount { font-family: monospace; font-size: 16px; font-weight: 900; color: var(--blue); }
+  .result-zero { color: #ccc; font-size: 13px; text-align: center; padding: 20px; }
+
+  /* ── Section title ── */
+  .sec-title {
+    font-size: 16px;
+    font-weight: 900;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ── Summary table ── */
+  .summary-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+  .summary-table th, .summary-table td {
+    border: 1.5px solid #ddd;
+    padding: 8px 10px;
+    font-size: 13px;
+    text-align: right;
+  }
+  .summary-table th { background: #f8f8f8; font-weight: 900; text-align: center; }
+  .summary-table td:first-child { text-align: left; font-weight: 700; }
+  .summary-table .total-row { font-weight: 900; background: #fffde7; }
+
+  /* ── Empty state ── */
+  .empty { text-align: center; color: var(--muted); padding: 32px 16px; font-size: 14px; }
+  .empty div { font-size: 36px; margin-bottom: 8px; }
+
+  /* ── Trip selector modal ── */
+  #tripModal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  #tripModal.hidden { display: none; }
+  .modal-box {
+    background: var(--card);
+    border: 3px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    width: 100%;
+    max-width: 360px;
+    box-shadow: 5px 5px 0 var(--border);
+  }
+  .modal-box h2 { font-size: 18px; margin-bottom: 16px; }
+  .trip-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .trip-item:hover { border-color: var(--accent2); background: #fff9ee; }
+  .trip-item.active { border-color: var(--accent2); background: var(--accent); }
+
+  /* ── Payer select ── */
+  #payerSelect { width: 100%; margin-bottom: 8px; }
+
+  /* ── Label ── */
+  .field-label {
+    font-size: 12px;
+    font-weight: 900;
+    color: var(--muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .field-group { margin-bottom: 10px; }
+
+  /* ── Per-person balance ── */
+  .balance-bar {
+    height: 6px;
+    background: #eee;
+    border-radius: 3px;
+    margin-top: 4px;
+    overflow: hidden;
+  }
+  .balance-fill-pos { height: 100%; background: var(--green); border-radius: 3px; }
+  .balance-fill-neg { height: 100%; background: var(--red); border-radius: 3px; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- Trip modal -->
+<div id="tripModal">
+  <div class="modal-box">
+    <h2>🗺️ 選擇行程</h2>
+    <div id="tripList"></div>
+    <div class="input-row" style="margin-top:12px;">
+      <input id="newTripName" type="text" placeholder="新行程名稱…">
+      <button class="btn btn-accent" onclick="createTrip()">新增</button>
+    </div>
+  </div>
+</div>
+
+<!-- Top bar -->
+<div id="topbar">
+  <h1>✈️ 出遊分錢</h1>
+  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
+    <div id="tripNameDisplay" onclick="showTripModal()" style="cursor:pointer;">點擊選擇行程 ▾</div>
+    <div id="syncStatus">—</div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div id="tabs">
+  <button class="tab-btn active" onclick="switchTab('members')">👥 成員</button>
+  <button class="tab-btn" onclick="switchTab('expenses')">🧾 支出</button>
+  <button class="tab-btn" onclick="switchTab('result')">💰 結算</button>
+</div>
+
+<!-- Main -->
+<div id="main">
+
+  <!-- Members tab -->
+  <div id="tab-members" class="section active">
+    <div class="sec-title">👥 出遊成員</div>
+    <div class="input-row">
+      <input id="memberInput" type="text" placeholder="輸入姓名…" onkeydown="if(event.key==='Enter')addMember()">
+      <button class="btn btn-accent" onclick="addMember()">＋ 加入</button>
+    </div>
+    <div id="memberChips" style="margin-bottom:16px;"></div>
+    <div id="memberEmpty" class="empty"><div>👋</div>先新增出遊成員</div>
+  </div>
+
+  <!-- Expenses tab -->
+  <div id="tab-expenses" class="section">
+    <!-- Add expense form -->
+    <div class="receipt" style="margin-bottom:16px;">
+      <div class="receipt-header">
+        <span class="receipt-title">➕ 新增支出</span>
+      </div>
+      <div class="receipt-body">
+        <div class="field-group">
+          <div class="field-label">項目名稱</div>
+          <div class="input-row" style="margin-bottom:0;">
+            <input id="expDesc" type="text" placeholder="例：晚餐、交通…" style="flex:1;">
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">金額 (NT$)</div>
+          <div class="input-row" style="margin-bottom:0;">
+            <input id="expAmount" type="number" placeholder="0" min="0" style="flex:1;">
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">付款人</div>
+          <select id="payerSelect" class="input-row" style="display:block;width:100%;border:2.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:15px;background:#fff;font-family:'Noto Sans TC',sans-serif;outline:none;">
+          </select>
+        </div>
+        <div class="field-group">
+          <div class="field-label">分帳方式</div>
+          <div class="split-toggle">
+            <input type="radio" name="splitType" id="splitEqual" value="equal" checked onchange="onSplitTypeChange()">
+            <label for="splitEqual">平均分攤</label>
+            <input type="radio" name="splitType" id="splitCustom" value="custom" onchange="onSplitTypeChange()">
+            <label for="splitCustom">指定金額</label>
+          </div>
+          <!-- Custom split table -->
+          <div id="customSplitArea" style="display:none;">
+            <table class="custom-split-table" id="customSplitTable"></table>
+            <div id="customTotal">尚未輸入</div>
+          </div>
+          <!-- Equal split preview -->
+          <div id="equalPreview" style="font-size:13px;color:var(--muted);"></div>
+        </div>
+        <button class="btn btn-accent" onclick="addExpense()" style="width:100%;margin-top:4px;">✅ 記錄此筆</button>
+      </div>
+    </div>
+
+    <!-- Expense list -->
+    <div class="sec-title" style="margin-top:4px;">🧾 支出紀錄</div>
+    <div id="expenseList"></div>
+    <div id="expenseEmpty" class="empty"><div>🧾</div>還沒有支出紀錄</div>
+  </div>
+
+  <!-- Result tab -->
+  <div id="tab-result" class="section">
+    <div class="sec-title">📊 個人小計</div>
+    <div id="summaryArea"></div>
+    <div class="sec-title">💸 誰該付給誰</div>
+    <div id="resultArea"></div>
+    <div id="resultEmpty" class="empty" style="display:none;"><div>🎉</div>大家都算清楚了！</div>
+  </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script>
+// ── State ──
+let state = {
+  tripId: null,
+  members: [],   // [{id, name}]
+  expenses: [],  // [{id, desc, amount, payerId, splits: [{memberId, amount}]}]
+};
+let db = null;
+let unsubscribe = null;
+
+// ── Firebase init ──
+requireAuth((user) => {
+  db = firebase.firestore();
+  loadTrips();
+});
+
+// ── Trip management ──
+let trips = [];
+
+async function loadTrips() {
+  const snap = await db.collection('trips').orderBy('createdAt','desc').get();
+  trips = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  if (trips.length === 0) {
+    showTripModal();
+  } else {
+    renderTripList();
+    selectTrip(trips[0].id);
+  }
+}
+
+function showTripModal() {
+  renderTripList();
+  document.getElementById('tripModal').classList.remove('hidden');
+}
+
+function renderTripList() {
+  const el = document.getElementById('tripList');
+  if (trips.length === 0) {
+    el.innerHTML = '<div class="empty" style="padding:12px;">還沒有行程，新增一個開始吧！</div>';
+    return;
+  }
+  el.innerHTML = trips.map(t => `
+    <div class="trip-item ${t.id === state.tripId ? 'active' : ''}" onclick="selectTrip('${t.id}')">
+      <span>🗺️ ${t.name}</span>
+      <span style="color:var(--muted);font-size:12px;">${t.memberCount||0} 人</span>
+    </div>
+  `).join('');
+}
+
+async function createTrip() {
+  const name = document.getElementById('newTripName').value.trim();
+  if (!name) return;
+  const ref = await db.collection('trips').add({ name, createdAt: Date.now(), memberCount: 0 });
+  document.getElementById('newTripName').value = '';
+  trips.unshift({ id: ref.id, name, memberCount: 0 });
+  selectTrip(ref.id);
+}
+
+function selectTrip(id) {
+  state.tripId = id;
+  const trip = trips.find(t => t.id === id);
+  document.getElementById('tripNameDisplay').textContent = trip ? trip.name : '—';
+  document.getElementById('tripModal').classList.add('hidden');
+  renderTripList();
+  subscribeToTrip(id);
+}
+
+// ── Firestore sync ──
+function subscribeToTrip(tripId) {
+  if (unsubscribe) unsubscribe();
+  setSyncStatus('同步中…');
+  unsubscribe = db.collection('trips').doc(tripId)
+    .onSnapshot(doc => {
+      if (!doc.exists) return;
+      const data = doc.data();
+      state.members = data.members || [];
+      state.expenses = data.expenses || [];
+      renderAll();
+      setSyncStatus('✅ 已同步 ' + new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}));
+    }, err => setSyncStatus('⚠️ 同步失敗'));
+}
+
+function saveToFirebase() {
+  if (!state.tripId || !db) return;
+  setSyncStatus('儲存中…');
+  db.collection('trips').doc(state.tripId).update({
+    members: state.members,
+    expenses: state.expenses,
+    memberCount: state.members.length,
+  }).then(() => setSyncStatus('✅ 已儲存'))
+    .catch(() => setSyncStatus('⚠️ 儲存失敗'));
+}
+
+function setSyncStatus(txt) {
+  document.getElementById('syncStatus').textContent = txt;
+}
+
+// ── Tab switching ──
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    const names = ['members','expenses','result'];
+    b.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if (name === 'expenses') updatePayerSelect();
+  if (name === 'result') renderResult();
+}
+
+// ── Members ──
+function addMember() {
+  const inp = document.getElementById('memberInput');
+  const name = inp.value.trim();
+  if (!name) return;
+  if (state.members.find(m => m.name === name)) return showToast('已有同名成員');
+  state.members.push({ id: Date.now().toString(), name });
+  inp.value = '';
+  saveToFirebase();
+  renderMembers();
+  updatePayerSelect();
+}
+
+function removeMember(id) {
+  if (state.expenses.some(e => e.payerId === id || e.splits.some(s => s.memberId === id))) {
+    return showToast('⚠️ 此成員已有支出紀錄，無法刪除');
+  }
+  state.members = state.members.filter(m => m.id !== id);
+  saveToFirebase();
+  renderMembers();
+  updatePayerSelect();
+}
+
+function renderMembers() {
+  const chips = document.getElementById('memberChips');
+  const empty = document.getElementById('memberEmpty');
+  if (state.members.length === 0) {
+    chips.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  chips.innerHTML = state.members.map(m => `
+    <span class="member-chip">
+      ${m.name}
+      <span class="del" onclick="removeMember('${m.id}')">✖</span>
+    </span>
+  `).join('');
+}
+
+// ── Expenses ──
+function updatePayerSelect() {
+  const sel = document.getElementById('payerSelect');
+  sel.innerHTML = state.members.length === 0
+    ? '<option value="">先新增成員</option>'
+    : state.members.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+  updateEqualPreview();
+  buildCustomSplitTable();
+}
+
+function onSplitTypeChange() {
+  const type = document.querySelector('input[name=splitType]:checked').value;
+  document.getElementById('customSplitArea').style.display = type === 'custom' ? '' : 'none';
+  document.getElementById('equalPreview').style.display = type === 'equal' ? '' : 'none';
+  if (type === 'custom') buildCustomSplitTable();
+  if (type === 'equal') updateEqualPreview();
+}
+
+function updateEqualPreview() {
+  const amount = parseFloat(document.getElementById('expAmount').value) || 0;
+  const n = state.members.length;
+  if (!n || !amount) { document.getElementById('equalPreview').textContent = ''; return; }
+  document.getElementById('equalPreview').textContent =
+    `每人 NT$ ${Math.ceil(amount / n).toLocaleString()}（共 ${n} 人）`;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('expAmount').addEventListener('input', () => {
+    updateEqualPreview();
+    updateCustomTotal();
+  });
+});
+
+function buildCustomSplitTable() {
+  const tbl = document.getElementById('customSplitTable');
+  const amount = parseFloat(document.getElementById('expAmount').value) || 0;
+  tbl.innerHTML = state.members.map(m => `
+    <tr>
+      <td style="font-weight:700;">${m.name}</td>
+      <td>
+        <input type="number" min="0" placeholder="0"
+          data-mid="${m.id}"
+          oninput="updateCustomTotal()"
+          style="width:90px;">
+      </td>
+      <td style="color:var(--muted);font-size:12px;">NT$</td>
+    </tr>
+  `).join('');
+  updateCustomTotal();
+}
+
+function updateCustomTotal() {
+  const amount = parseFloat(document.getElementById('expAmount').value) || 0;
+  const inputs = document.querySelectorAll('#customSplitTable input[data-mid]');
+  let total = 0;
+  inputs.forEach(inp => { total += parseFloat(inp.value) || 0; });
+  const el = document.getElementById('customTotal');
+  const diff = amount - total;
+  if (Math.abs(diff) < 0.01) {
+    el.textContent = `✅ 合計 NT$ ${total.toLocaleString()}，與金額相符`;
+    el.className = 'ok';
+  } else if (diff > 0) {
+    el.textContent = `還差 NT$ ${diff.toLocaleString()} 未分配`;
+    el.className = 'over';
+  } else {
+    el.textContent = `超出 NT$ ${Math.abs(diff).toLocaleString()}`;
+    el.className = 'over';
+  }
+}
+
+function addExpense() {
+  const desc = document.getElementById('expDesc').value.trim();
+  const amount = parseFloat(document.getElementById('expAmount').value);
+  const payerId = document.getElementById('payerSelect').value;
+  if (!desc) return showToast('請輸入項目名稱');
+  if (!amount || amount <= 0) return showToast('請輸入金額');
+  if (!payerId) return showToast('請選擇付款人');
+  if (!state.tripId) return showToast('請先選擇行程');
+
+  const type = document.querySelector('input[name=splitType]:checked').value;
+  let splits = [];
+
+  if (type === 'equal') {
+    const each = amount / state.members.length;
+    splits = state.members.map(m => ({ memberId: m.id, amount: parseFloat(each.toFixed(2)) }));
+  } else {
+    const inputs = document.querySelectorAll('#customSplitTable input[data-mid]');
+    let total = 0;
+    inputs.forEach(inp => {
+      const v = parseFloat(inp.value) || 0;
+      total += v;
+      splits.push({ memberId: inp.dataset.mid, amount: v });
+    });
+    if (Math.abs(total - amount) > 0.01) return showToast('⚠️ 指定金額合計與總金額不符');
+  }
+
+  state.expenses.push({
+    id: Date.now().toString(),
+    desc, amount, payerId, splits,
+    createdAt: Date.now(),
+  });
+
+  saveToFirebase();
+
+  // Reset form
+  document.getElementById('expDesc').value = '';
+  document.getElementById('expAmount').value = '';
+  document.getElementById('splitEqual').checked = true;
+  onSplitTypeChange();
+  renderExpenses();
+  showToast('✅ 已記錄！');
+}
+
+function removeExpense(id) {
+  if (!confirm('確定刪除這筆支出？')) return;
+  state.expenses = state.expenses.filter(e => e.id !== id);
+  saveToFirebase();
+  renderExpenses();
+}
+
+function renderExpenses() {
+  const list = document.getElementById('expenseList');
+  const empty = document.getElementById('expenseEmpty');
+  if (state.expenses.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  // sort newest first
+  const sorted = [...state.expenses].sort((a,b) => b.createdAt - a.createdAt);
+  list.innerHTML = sorted.map(e => {
+    const payer = state.members.find(m => m.id === e.payerId);
+    const payerName = payer ? payer.name : '未知';
+    const assignedNames = e.splits
+      .filter(s => s.amount > 0)
+      .map(s => {
+        const m = state.members.find(x => x.id === s.memberId);
+        return m ? `<span class="tag assigned">${m.name} NT$${s.amount.toLocaleString()}</span>` : '';
+      }).join('');
+    return `
+      <div class="receipt">
+        <span class="receipt-del" onclick="removeExpense('${e.id}')">✖</span>
+        <div class="receipt-header">
+          <span class="receipt-title">${e.desc}</span>
+          <span class="receipt-amount">NT$ ${e.amount.toLocaleString()}</span>
+        </div>
+        <div class="receipt-body">
+          <div class="receipt-row">
+            <span>付款人</span>
+            <strong>${payerName} 先付</strong>
+          </div>
+          <div class="receipt-tags" style="margin-top:6px;">${assignedNames}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── Result calculation ──
+function renderResult() {
+  if (!state.members.length || !state.expenses.length) {
+    document.getElementById('summaryArea').innerHTML = '';
+    document.getElementById('resultArea').innerHTML = '<div class="empty"><div>📭</div>還沒有資料可結算</div>';
+    document.getElementById('resultEmpty').style.display = 'none';
+    return;
+  }
+
+  // net[memberId] = paid - owed
+  const paid = {}, owed = {};
+  state.members.forEach(m => { paid[m.id] = 0; owed[m.id] = 0; });
+  state.expenses.forEach(e => {
+    paid[e.payerId] = (paid[e.payerId] || 0) + e.amount;
+    e.splits.forEach(s => { owed[s.memberId] = (owed[s.memberId] || 0) + s.amount; });
+  });
+
+  const net = {};
+  state.members.forEach(m => { net[m.id] = (paid[m.id]||0) - (owed[m.id]||0); });
+
+  // Summary table
+  const totalPaid = Object.values(paid).reduce((a,b)=>a+b,0);
+  const summaryRows = state.members.map(m => `
+    <tr>
+      <td>${m.name}</td>
+      <td>NT$ ${(paid[m.id]||0).toLocaleString()}</td>
+      <td>NT$ ${(owed[m.id]||0).toLocaleString()}</td>
+      <td style="font-weight:900;color:${net[m.id]>=0?'var(--green)':'var(--red)'};">
+        ${net[m.id]>=0?'＋':''}${net[m.id].toLocaleString()}
+      </td>
+    </tr>
+  `).join('');
+  document.getElementById('summaryArea').innerHTML = `
+    <table class="summary-table">
+      <thead><tr><th>成員</th><th>已付出</th><th>應分攤</th><th>結餘</th></tr></thead>
+      <tbody>${summaryRows}</tbody>
+      <tfoot><tr class="total-row"><td>合計</td><td>NT$ ${totalPaid.toLocaleString()}</td><td>NT$ ${totalPaid.toLocaleString()}</td><td>—</td></tr></tfoot>
+    </table>`;
+
+  // Settle debts (greedy algorithm)
+  const creditors = [], debtors = [];
+  state.members.forEach(m => {
+    if (net[m.id] > 0.005) creditors.push({ id: m.id, name: m.name, amt: net[m.id] });
+    if (net[m.id] < -0.005) debtors.push({ id: m.id, name: m.name, amt: -net[m.id] });
+  });
+
+  const txs = [];
+  let ci = 0, di = 0;
+  while (ci < creditors.length && di < debtors.length) {
+    const c = creditors[ci], d = debtors[di];
+    const amt = Math.min(c.amt, d.amt);
+    txs.push({ from: d.name, to: c.name, amount: Math.round(amt) });
+    c.amt -= amt; d.amt -= amt;
+    if (c.amt < 0.005) ci++;
+    if (d.amt < 0.005) di++;
+  }
+
+  const resultEl = document.getElementById('resultArea');
+  const emptyEl = document.getElementById('resultEmpty');
+  if (txs.length === 0) {
+    resultEl.innerHTML = '';
+    emptyEl.style.display = '';
+  } else {
+    emptyEl.style.display = 'none';
+    resultEl.innerHTML = `<div class="result-card">
+      <div class="result-header">最少 ${txs.length} 筆轉帳搞定 🎯</div>
+      ${txs.map(t => `
+        <div class="result-row">
+          <span style="font-weight:900;">${t.from}</span>
+          <span class="result-arrow">→</span>
+          <span style="font-weight:900;">${t.to}</span>
+          <span class="result-amount">NT$ ${t.amount.toLocaleString()}</span>
+        </div>
+      `).join('')}
+    </div>`;
+  }
+}
+
+// ── renderAll ──
+function renderAll() {
+  renderMembers();
+  renderExpenses();
+  updatePayerSelect();
+  const activeTab = document.querySelector('.tab-btn.active');
+  if (activeTab && activeTab.textContent.includes('結算')) renderResult();
+}
+
+// ── Toast ──
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2d2d2d;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:700;z-index:999;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.style.opacity = '0', 2000);
+}
+</script>
+</body>
+</html>
