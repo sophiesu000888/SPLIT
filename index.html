@@ -25,20 +25,25 @@
     --text: #1a1a1a;
     --muted: #888;
     --receipt: #fff9ee;
+    --tab-h: 58px;
+    --top-h: 56px;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
   body {
     background: var(--bg);
     font-family: 'Noto Sans TC', sans-serif;
     color: var(--text);
     min-height: 100vh;
+    font-size: 16px;
   }
 
   /* ── Top bar ── */
   #topbar {
     background: var(--accent);
     border-bottom: 3px solid var(--border);
-    padding: 12px 16px;
+    padding: 0 16px;
+    height: var(--top-h);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -46,52 +51,65 @@
   }
   #topbar h1 {
     font-family: 'Kalam', cursive;
-    font-size: 22px;
+    font-size: 24px;
     color: var(--border);
     letter-spacing: 1px;
   }
+  #topbarRight { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
   #tripNameDisplay {
-    font-size: 12px;
-    font-weight: 700;
+    font-size: 13px;
+    font-weight: 900;
     color: var(--border);
-    opacity: 0.7;
-    max-width: 140px;
+    max-width: 160px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    background: rgba(0,0,0,0.08);
+    border-radius: 20px;
+    padding: 4px 10px;
+    cursor: pointer;
   }
   #syncStatus {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--border);
-    opacity: 0.65;
+    opacity: 0.55;
   }
 
-  /* ── Tab bar ── */
+  /* ── Bottom tab bar ── */
   #tabs {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: var(--tab-h);
     display: flex;
-    border-bottom: 3px solid var(--border);
+    border-top: 3px solid var(--border);
     background: #fff;
+    z-index: 100;
   }
   .tab-btn {
     flex: 1;
-    padding: 10px 4px;
-    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    font-size: 10px;
     font-weight: 900;
     border: none;
     background: none;
     cursor: pointer;
     color: var(--muted);
-    border-bottom: 3px solid transparent;
-    margin-bottom: -3px;
-    transition: all 0.15s;
+    padding: 6px 4px;
+    transition: color 0.15s, background 0.15s;
+    -webkit-tap-highlight-color: transparent;
   }
-  .tab-btn.active {
-    color: var(--accent2);
-    border-bottom-color: var(--accent2);
-  }
+  .tab-btn .tab-icon { font-size: 22px; line-height: 1; }
+  .tab-btn.active { color: var(--accent2); background: #fff9ee; }
 
   /* ── Main content ── */
-  #main { padding: 14px 14px 80px; max-width: 560px; margin: 0 auto; }
+  #main {
+    padding: 16px 14px calc(var(--tab-h) + 16px);
+    min-height: calc(100vh - var(--top-h));
+  }
 
   /* ── Section ── */
   .section { display: none; }
@@ -101,57 +119,64 @@
   .member-chip {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     background: var(--accent);
     border: 2px solid var(--border);
-    border-radius: 20px;
-    padding: 5px 12px;
+    border-radius: 24px;
+    padding: 8px 14px;
     font-weight: 900;
-    font-size: 14px;
-    margin: 4px;
+    font-size: 15px;
+    margin: 5px;
   }
   .member-chip .del {
     cursor: pointer;
-    font-size: 12px;
-    opacity: 0.5;
-    line-height: 1;
+    font-size: 14px;
+    opacity: 0.45;
+    min-width: 24px;
+    min-height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-  .member-chip .del:hover { opacity: 1; }
 
-  /* ── Input row ── */
+  /* ── Input / fields ── */
   .input-row {
     display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
+    gap: 10px;
+    margin-bottom: 14px;
   }
-  .input-row input, .input-row select {
-    flex: 1;
+  input[type=text], input[type=number], select {
     border: 2.5px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 12px;
-    font-size: 15px;
+    border-radius: 12px;
+    padding: 13px 14px;
+    font-size: 16px;
     font-family: 'Noto Sans TC', sans-serif;
     background: #fff;
     outline: none;
+    width: 100%;
+    -webkit-appearance: none;
   }
-  .input-row input:focus, .input-row select:focus {
-    border-color: var(--accent2);
-  }
+  input:focus, select:focus { border-color: var(--accent2); }
+  .input-row input, .input-row select { flex: 1; }
+
   .btn {
     border: 2.5px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 16px;
-    font-size: 14px;
+    border-radius: 12px;
+    padding: 13px 18px;
+    font-size: 15px;
     font-weight: 900;
     font-family: 'Noto Sans TC', sans-serif;
     cursor: pointer;
     background: var(--card);
-    transition: all 0.1s;
     box-shadow: 3px 3px 0 var(--border);
     white-space: nowrap;
+    min-height: 48px;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.1s, box-shadow 0.1s;
   }
   .btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--border); }
   .btn-accent { background: var(--accent); }
+  .btn-wide { width: 100%; margin-top: 6px; font-size: 16px; padding: 15px; }
   .btn-green { background: #c8e6c9; color: var(--green); border-color: var(--green); box-shadow: 3px 3px 0 var(--green); }
   .btn-red { background: #ffcdd2; color: var(--red); border-color: var(--red); box-shadow: 3px 3px 0 var(--red); }
 
@@ -159,215 +184,281 @@
   .receipt {
     background: var(--receipt);
     border: 2.5px solid var(--border);
-    border-radius: 12px;
-    margin-bottom: 12px;
+    border-radius: 14px;
+    margin-bottom: 14px;
     overflow: hidden;
     box-shadow: 3px 3px 0 var(--border);
     position: relative;
   }
   .receipt-header {
     background: var(--accent);
-    padding: 8px 14px;
+    padding: 10px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-bottom: 2px solid var(--border);
   }
-  .receipt-title {
-    font-weight: 900;
-    font-size: 15px;
-    flex: 1;
-  }
-  .receipt-amount {
-    font-weight: 900;
-    font-size: 18px;
-    font-family: monospace;
-  }
-  .receipt-body { padding: 10px 14px; }
+  .receipt-title { font-weight: 900; font-size: 16px; flex: 1; }
+  .receipt-amount { font-weight: 900; font-size: 20px; font-family: monospace; }
+  .receipt-body { padding: 12px 16px; }
   .receipt-row {
     display: flex;
     justify-content: space-between;
-    font-size: 13px;
-    padding: 2px 0;
+    font-size: 14px;
+    padding: 3px 0;
     color: var(--muted);
   }
   .receipt-row strong { color: var(--text); }
-  .receipt-tags { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
+  .receipt-tags { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
   .tag {
     background: #fff;
     border: 1.5px solid #ddd;
-    border-radius: 10px;
-    padding: 2px 8px;
-    font-size: 12px;
+    border-radius: 12px;
+    padding: 4px 10px;
+    font-size: 13px;
     font-weight: 700;
   }
   .tag.assigned { background: #e3f2fd; border-color: #90caf9; color: var(--blue); }
   .receipt-del {
     position: absolute;
-    top: 8px; right: 10px;
+    top: 10px; right: 14px;
     cursor: pointer;
-    font-size: 13px;
-    opacity: 0.4;
-    line-height: 1;
+    font-size: 15px;
+    opacity: 0.35;
+    min-width: 36px; min-height: 36px;
+    display: flex; align-items: center; justify-content: center;
   }
-  .receipt-del:hover { opacity: 1; }
 
   /* ── Split type ── */
   .split-toggle {
     display: flex;
-    border: 2px solid var(--border);
-    border-radius: 10px;
+    border: 2.5px solid var(--border);
+    border-radius: 12px;
     overflow: hidden;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
   .split-toggle label {
     flex: 1;
     text-align: center;
-    padding: 8px 4px;
-    font-size: 13px;
+    padding: 12px 4px;
+    font-size: 15px;
     font-weight: 700;
     cursor: pointer;
     background: #fff;
     transition: background 0.15s;
   }
   .split-toggle input[type=radio] { display: none; }
-  .split-toggle input[type=radio]:checked + label {
-    background: var(--accent);
-    color: var(--border);
-  }
+  .split-toggle input[type=radio]:checked + label { background: var(--accent); }
 
-  /* ── Custom split table ── */
-  .custom-split-table { width: 100%; margin: 8px 0; border-collapse: collapse; }
-  .custom-split-table td { padding: 4px 6px; font-size: 14px; }
-  .custom-split-table input {
-    width: 80px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    padding: 5px 8px;
-    font-size: 14px;
+  /* ── Custom split ── */
+  .custom-split-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .custom-split-row:last-child { border-bottom: none; }
+  .custom-split-row input {
+    width: 110px;
     text-align: right;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 16px;
     font-family: monospace;
   }
-  .custom-split-table input:focus { border-color: var(--accent2); outline: none; }
-  #customTotal { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
-  #customTotal.ok { color: var(--green); font-weight: 900; }
-  #customTotal.over { color: var(--red); font-weight: 900; }
+  #customTotal { font-size: 14px; color: var(--muted); margin: 8px 0 4px; font-weight: 700; }
+  #customTotal.ok { color: var(--green); }
+  #customTotal.over { color: var(--red); }
 
-  /* ── Result ── */
+  /* ── Section title ── */
+  .sec-title {
+    font-size: 17px;
+    font-weight: 900;
+    margin: 16px 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .sec-title:first-child { margin-top: 0; }
+
+  /* ── Field label ── */
+  .field-label {
+    font-size: 12px;
+    font-weight: 900;
+    color: var(--muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .field-group { margin-bottom: 14px; }
+
+  /* ── Summary: card list instead of table ── */
+  .summary-card {
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 14px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .summary-card:active { border-color: var(--accent2); }
+  .summary-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 16px;
+  }
+  .summary-name { font-size: 17px; font-weight: 900; }
+  .summary-balance {
+    font-size: 18px;
+    font-weight: 900;
+    font-family: monospace;
+  }
+  .summary-balance.pos { color: var(--green); }
+  .summary-balance.neg { color: var(--red); }
+  .summary-balance.zero { color: var(--muted); }
+  .summary-card-sub {
+    display: flex;
+    padding: 0 16px 12px;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .summary-card-sub span strong { color: var(--text); }
+  .summary-total {
+    background: #fffde7;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 13px 16px;
+    display: flex;
+    justify-content: space-between;
+    font-weight: 900;
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+
+  /* ── Result transfer ── */
   .result-card {
     background: #fff;
     border: 2.5px solid var(--border);
-    border-radius: 12px;
-    margin-bottom: 10px;
+    border-radius: 14px;
+    margin-bottom: 12px;
     overflow: hidden;
     box-shadow: 3px 3px 0 var(--border);
   }
   .result-header {
     background: #e8f5e9;
-    padding: 8px 14px;
+    padding: 10px 16px;
     font-weight: 900;
     font-size: 14px;
     border-bottom: 2px solid var(--border);
     color: var(--green);
   }
   .result-row {
-    padding: 10px 14px;
+    padding: 14px 16px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
     border-bottom: 1px solid #eee;
-    font-size: 14px;
-    font-weight: 700;
-  }
-  .result-row:last-child { border-bottom: none; }
-  .result-arrow { color: var(--accent2); font-size: 16px; margin: 0 8px; }
-  .result-amount { font-family: monospace; font-size: 16px; font-weight: 900; color: var(--blue); }
-  .result-zero { color: #ccc; font-size: 13px; text-align: center; padding: 20px; }
-
-  /* ── Section title ── */
-  .sec-title {
     font-size: 16px;
-    font-weight: 900;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
+    font-weight: 700;
     gap: 6px;
   }
-
-  /* ── Summary table ── */
-  .summary-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
-  .summary-table th, .summary-table td {
-    border: 1.5px solid #ddd;
-    padding: 8px 10px;
-    font-size: 13px;
-    text-align: right;
+  .result-row:last-child { border-bottom: none; }
+  .result-from { flex: 1; }
+  .result-arrow { color: var(--accent2); font-size: 20px; }
+  .result-to { flex: 1; text-align: right; }
+  .result-amount {
+    font-family: monospace;
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--blue);
+    background: #e3f2fd;
+    border-radius: 10px;
+    padding: 4px 10px;
   }
-  .summary-table th { background: #f8f8f8; font-weight: 900; text-align: center; }
-  .summary-table td:first-child { text-align: left; font-weight: 700; }
-  .summary-table .total-row { font-weight: 900; background: #fffde7; }
 
   /* ── Empty state ── */
-  .empty { text-align: center; color: var(--muted); padding: 32px 16px; font-size: 14px; }
-  .empty div { font-size: 36px; margin-bottom: 8px; }
+  .empty { text-align: center; color: var(--muted); padding: 48px 16px; font-size: 15px; }
+  .empty div { font-size: 48px; margin-bottom: 10px; }
 
   /* ── Trip selector modal ── */
   #tripModal {
     position: fixed; inset: 0;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.55);
     z-index: 200;
-    display: flex; align-items: center; justify-content: center;
-    padding: 20px;
+    display: flex; align-items: flex-end; justify-content: center;
   }
   #tripModal.hidden { display: none; }
   .modal-box {
     background: var(--card);
     border: 3px solid var(--border);
-    border-radius: 16px;
-    padding: 20px;
+    border-radius: 20px 20px 0 0;
+    padding: 20px 20px 36px;
     width: 100%;
-    max-width: 360px;
-    box-shadow: 5px 5px 0 var(--border);
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 -4px 0 var(--border);
   }
-  .modal-box h2 { font-size: 18px; margin-bottom: 16px; }
+  .modal-box h2 { font-size: 20px; margin-bottom: 16px; font-weight: 900; }
   .trip-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border: 2px solid #ddd;
-    border-radius: 10px;
-    padding: 10px 14px;
-    margin-bottom: 8px;
+    border: 2.5px solid #e0e0e0;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
     cursor: pointer;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 16px;
+    min-height: 54px;
   }
-  .trip-item:hover { border-color: var(--accent2); background: #fff9ee; }
-  .trip-item.active { border-color: var(--accent2); background: var(--accent); }
+  .trip-item.active { border-color: var(--accent2); background: #fff9ee; }
 
-  /* ── Payer select ── */
-  #payerSelect { width: 100%; margin-bottom: 8px; }
-
-  /* ── Label ── */
-  .field-label {
+  /* ── Member detail card ── */
+  .detail-card {
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    box-shadow: 3px 3px 0 var(--border);
+  }
+  .detail-header {
+    background: #e3f2fd;
+    border-bottom: 2px solid var(--border);
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 900;
+    color: var(--blue);
+  }
+  .detail-section-label {
+    padding: 6px 14px;
     font-size: 12px;
     font-weight: 900;
     color: var(--muted);
-    margin-bottom: 4px;
+    background: #fafafa;
+    border-bottom: 1px solid #eee;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
-  .field-group { margin-bottom: 10px; }
-
-  /* ── Per-person balance ── */
-  .balance-bar {
-    height: 6px;
-    background: #eee;
-    border-radius: 3px;
-    margin-top: 4px;
-    overflow: hidden;
+  .detail-row {
+    padding: 9px 14px;
+    border-bottom: 1px solid #f0f0f0;
+    display: grid;
+    grid-template-columns: 20px 1fr;
+    grid-template-rows: auto auto;
+    gap: 1px 6px;
   }
-  .balance-fill-pos { height: 100%; background: var(--green); border-radius: 3px; }
-  .balance-fill-neg { height: 100%; background: var(--red); border-radius: 3px; }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-icon { grid-row: 1 / 3; align-self: center; font-size: 16px; }
+  .detail-desc { font-size: 14px; font-weight: 700; }
+  .detail-sub { font-size: 12px; color: var(--muted); }
 
   /* scrollbar */
   ::-webkit-scrollbar { width: 4px; }
@@ -390,18 +481,24 @@
 
 <!-- Top bar -->
 <div id="topbar">
-  <h1>Oops I paid!</h1>
-  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
-    <div id="tripNameDisplay" onclick="showTripModal()" style="cursor:pointer;">點擊選擇行程 ▾</div>
+  <h1>✈️ Oops I Paid!</h1>
+  <div id="topbarRight">
+    <div id="tripNameDisplay" onclick="showTripModal()">點擊選擇行程 ▾</div>
     <div id="syncStatus">—</div>
   </div>
 </div>
 
-<!-- Tabs -->
+<!-- Bottom tab bar -->
 <div id="tabs">
-  <button class="tab-btn active" onclick="switchTab('members')">👥 成員</button>
-  <button class="tab-btn" onclick="switchTab('expenses')">🧾 支出</button>
-  <button class="tab-btn" onclick="switchTab('result')">💰 結算</button>
+  <button class="tab-btn active" onclick="switchTab('members')">
+    <span class="tab-icon">👥</span>成員
+  </button>
+  <button class="tab-btn" onclick="switchTab('expenses')">
+    <span class="tab-icon">🧾</span>支出
+  </button>
+  <button class="tab-btn" onclick="switchTab('result')">
+    <span class="tab-icon">💰</span>結算
+  </button>
 </div>
 
 <!-- Main -->
@@ -409,13 +506,13 @@
 
   <!-- Members tab -->
   <div id="tab-members" class="section active">
-    <div class="sec-title">👥 成員</div>
+    <div class="sec-title">👥 出遊成員</div>
     <div class="input-row">
       <input id="memberInput" type="text" placeholder="輸入姓名…" onkeydown="if(event.key==='Enter')addMember()">
-      <button class="btn btn-accent" onclick="addMember()">＋ 加入</button>
+      <button class="btn btn-accent" onclick="addMember()" style="min-width:80px;">＋ 加入</button>
     </div>
     <div id="memberChips" style="margin-bottom:16px;"></div>
-    <div id="memberEmpty" class="empty"><div>👋</div>先新增成員</div>
+    <div id="memberEmpty" class="empty"><div>👋</div>先新增出遊成員</div>
   </div>
 
   <!-- Expenses tab -->
@@ -453,13 +550,13 @@
           </div>
           <!-- Custom split table -->
           <div id="customSplitArea" style="display:none;">
-            <table class="custom-split-table" id="customSplitTable"></table>
+            <div id="customSplitTable" style="background:#fff;border:2px solid #e0e0e0;border-radius:12px;padding:4px 14px;margin-bottom:8px;"></div>
             <div id="customTotal">尚未輸入</div>
           </div>
           <!-- Equal split preview -->
           <div id="equalPreview" style="font-size:13px;color:var(--muted);"></div>
         </div>
-        <button class="btn btn-accent" onclick="addExpense()" style="width:100%;margin-top:4px;">✅ 記錄此筆</button>
+        <button class="btn btn-accent btn-wide" onclick="addExpense()">✅ 記錄此筆</button>
       </div>
     </div>
 
@@ -471,8 +568,9 @@
 
   <!-- Result tab -->
   <div id="tab-result" class="section">
-    <div class="sec-title">📊 個人小計</div>
+    <div class="sec-title">📊 個人小計 <span style="font-size:12px;font-weight:400;color:var(--muted);">點擊看明細</span></div>
     <div id="summaryArea"></div>
+    <div id="memberDetail" style="display:none;"></div>
     <div class="sec-title">💸 誰該付給誰</div>
     <div id="resultArea"></div>
     <div id="resultEmpty" class="empty" style="display:none;"><div>🎉</div>大家都算清楚了！</div>
@@ -523,10 +621,27 @@ function renderTripList() {
   }
   el.innerHTML = trips.map(t => `
     <div class="trip-item ${t.id === state.tripId ? 'active' : ''}" onclick="selectTrip('${t.id}')">
-      <span>🗺️ ${t.name}</span>
-      <span style="color:var(--muted);font-size:12px;">${t.memberCount||0} 人</span>
+      <span>🗺️ <span id="tripLabel-${t.id}">${t.name}</span></span>
+      <span style="display:flex;align-items:center;gap:6px;">
+        <span style="color:var(--muted);font-size:12px;">${t.memberCount||0} 人</span>
+        <span onclick="event.stopPropagation();startRenameTrip('${t.id}')" style="cursor:pointer;font-size:14px;opacity:0.5;" title="重新命名">✏️</span>
+      </span>
     </div>
   `).join('');
+}
+
+async function startRenameTrip(id) {
+  const trip = trips.find(t => t.id === id);
+  if (!trip) return;
+  const newName = prompt('修改行程名稱：', trip.name);
+  if (!newName || newName.trim() === trip.name) return;
+  const name = newName.trim();
+  trip.name = name;
+  await db.collection('trips').doc(id).update({ name });
+  if (state.tripId === id) {
+    document.getElementById('tripNameDisplay').textContent = name;
+  }
+  renderTripList();
 }
 
 async function createTrip() {
@@ -664,18 +779,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function buildCustomSplitTable() {
   const tbl = document.getElementById('customSplitTable');
-  const amount = parseFloat(document.getElementById('expAmount').value) || 0;
   tbl.innerHTML = state.members.map(m => `
-    <tr>
-      <td style="font-weight:700;">${m.name}</td>
-      <td>
-        <input type="number" min="0" placeholder="0"
-          data-mid="${m.id}"
-          oninput="updateCustomTotal()"
-          style="width:90px;">
-      </td>
-      <td style="color:var(--muted);font-size:12px;">NT$</td>
-    </tr>
+    <div class="custom-split-row">
+      <span>${m.name}</span>
+      <input type="number" inputmode="decimal" min="0" placeholder="0"
+        data-mid="${m.id}" oninput="updateCustomTotal()">
+    </div>
   `).join('');
   updateCustomTotal();
 }
@@ -809,22 +918,25 @@ function renderResult() {
 
   // Summary table
   const totalPaid = Object.values(paid).reduce((a,b)=>a+b,0);
-  const summaryRows = state.members.map(m => `
-    <tr>
-      <td>${m.name}</td>
-      <td>NT$ ${(paid[m.id]||0).toLocaleString()}</td>
-      <td>NT$ ${(owed[m.id]||0).toLocaleString()}</td>
-      <td style="font-weight:900;color:${net[m.id]>=0?'var(--green)':'var(--red)'};">
-        ${net[m.id]>=0?'＋':''}${net[m.id].toLocaleString()}
-      </td>
-    </tr>
-  `).join('');
-  document.getElementById('summaryArea').innerHTML = `
-    <table class="summary-table">
-      <thead><tr><th>成員</th><th>已付出</th><th>應分攤</th><th>結餘</th></tr></thead>
-      <tbody>${summaryRows}</tbody>
-      <tfoot><tr class="total-row"><td>合計</td><td>NT$ ${totalPaid.toLocaleString()}</td><td>NT$ ${totalPaid.toLocaleString()}</td><td>—</td></tr></tfoot>
-    </table>`;
+  const summaryCards = state.members.map(m => {
+    const n = net[m.id] || 0;
+    const cls = n > 0.5 ? 'pos' : n < -0.5 ? 'neg' : 'zero';
+    const label = n > 0.5 ? '別人欠你' : n < -0.5 ? '你欠別人' : '已結清';
+    const sign = n > 0.5 ? '＋' : '';
+    return `<div class="summary-card" onclick="showMemberDetail('${m.id}')">
+      <div class="summary-card-header">
+        <span class="summary-name">${m.name}</span>
+        <span class="summary-balance ${cls}">${sign}NT$ ${Math.abs(Math.round(n)).toLocaleString()}</span>
+      </div>
+      <div class="summary-card-sub">
+        <span>已付 <strong>NT$ ${Math.round(paid[m.id]||0).toLocaleString()}</strong></span>
+        <span>應攤 <strong>NT$ ${Math.round(owed[m.id]||0).toLocaleString()}</strong></span>
+        <span style="color:${cls==='pos'?'var(--green)':cls==='neg'?'var(--red)':'var(--muted)'};">${label}</span>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('summaryArea').innerHTML = summaryCards +
+    `<div class="summary-total"><span>總支出</span><span>NT$ ${Math.round(totalPaid).toLocaleString()}</span></div>`;
 
   // Settle debts (greedy algorithm)
   const creditors = [], debtors = [];
@@ -855,14 +967,68 @@ function renderResult() {
       <div class="result-header">最少 ${txs.length} 筆轉帳搞定 🎯</div>
       ${txs.map(t => `
         <div class="result-row">
-          <span style="font-weight:900;">${t.from}</span>
+          <span class="result-from">${t.from}</span>
           <span class="result-arrow">→</span>
-          <span style="font-weight:900;">${t.to}</span>
-          <span class="result-amount">NT$ ${t.amount.toLocaleString()}</span>
+          <span class="result-to">${t.to}</span>
+          <span class="result-amount">NT$${t.amount.toLocaleString()}</span>
         </div>
       `).join('')}
     </div>`;
   }
+}
+
+// ── Member detail ──
+function showMemberDetail(memberId) {
+  const el = document.getElementById('memberDetail');
+  const m = state.members.find(x => x.id === memberId);
+  if (!m) return;
+
+  // Already open for this person → toggle off
+  if (el.dataset.openFor === memberId && el.style.display !== 'none') {
+    el.style.display = 'none';
+    el.dataset.openFor = '';
+    return;
+  }
+  el.dataset.openFor = memberId;
+  el.style.display = '';
+
+  // Expenses this person paid
+  const asPayer = state.expenses.filter(e => e.payerId === memberId);
+  // Expenses where this person owes something
+  const asParticipant = state.expenses.filter(e =>
+    e.payerId !== memberId && e.splits.some(s => s.memberId === memberId && s.amount > 0)
+  );
+
+  const payerRows = asPayer.map(e => {
+    const perMe = e.splits.find(s => s.memberId === memberId)?.amount || 0;
+    const others = e.amount - perMe;
+    return `<div class="detail-row">
+      <span class="detail-icon">💳</span>
+      <span class="detail-desc">${e.desc}</span>
+      <span class="detail-sub">先付 NT$${e.amount.toLocaleString()}，其他人欠你 NT$${others.toLocaleString()}</span>
+    </div>`;
+  }).join('');
+
+  const oweRows = asParticipant.map(e => {
+    const myAmt = e.splits.find(s => s.memberId === memberId)?.amount || 0;
+    const payer = state.members.find(x => x.id === e.payerId);
+    return `<div class="detail-row">
+      <span class="detail-icon">💸</span>
+      <span class="detail-desc">${e.desc}</span>
+      <span class="detail-sub">應付 ${payer?.name||'?'} NT$${myAmt.toLocaleString()}</span>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="detail-card">
+      <div class="detail-header">
+        📋 ${m.name} 的明細
+        <span onclick="showMemberDetail('${memberId}')" style="cursor:pointer;float:right;opacity:0.4;font-size:13px;">✖ 關閉</span>
+      </div>
+      ${asPayer.length ? `<div class="detail-section-label">✅ 我先付了</div>${payerRows}` : ''}
+      ${asParticipant.length ? `<div class="detail-section-label">📌 我需要還</div>${oweRows}` : ''}
+      ${!asPayer.length && !asParticipant.length ? '<div style="color:var(--muted);font-size:13px;padding:8px 0;">這位成員沒有相關支出</div>' : ''}
+    </div>`;
 }
 
 // ── renderAll ──
