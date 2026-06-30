@@ -527,26 +527,17 @@
     margin-bottom: 10px;
   }
 
-  /* ── Settle modal ── */
-  #settleModal {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.55);
-    z-index: 300;
-    display: flex; align-items: flex-end; justify-content: center;
+  /* ── Settle picker (inline) ── */
+  .settle-picker {
+    background: #fff;
+    border: 2.5px solid var(--green);
+    border-radius: 16px;
+    padding: 14px;
+    margin-bottom: 14px;
+    box-shadow: 3px 3px 0 var(--green);
   }
-  #settleModal.hidden { display: none; }
-  .settle-modal-box {
-    background: var(--card);
-    border: 3px solid var(--border);
-    border-radius: 20px 20px 0 0;
-    padding: 20px 20px 40px;
-    width: 100%;
-    max-height: 85vh;
-    overflow-y: auto;
-    box-shadow: 0 -4px 0 var(--border);
-  }
-  .settle-modal-box h2 { font-size: 20px; font-weight: 900; margin-bottom: 6px; }
-  .settle-modal-box p { font-size: 14px; color: var(--muted); margin-bottom: 16px; }
+
+  /* settle modal removed */
   .settle-exp-item {
     display: flex;
     align-items: center;
@@ -669,9 +660,9 @@
     <div class="receipt" style="margin-bottom:16px;">
       <div class="receipt-header" onclick="toggleAddForm()" style="cursor:pointer;user-select:none;">
         <span class="receipt-title">➕ 新增支出</span>
-        <span id="addFormChevron" style="font-size:18px;transition:transform 0.2s;">▲</span>
+        <span id="addFormChevron" style="font-size:18px;transition:transform 0.2s;">▼</span>
       </div>
-      <div id="addFormBody" class="receipt-body">
+      <div id="addFormBody" class="receipt-body" style="display:none;">
         <div class="field-group">
           <div class="field-label">項目名稱</div>
           <div class="input-row" style="margin-bottom:0;">
@@ -712,28 +703,13 @@
     <!-- Expense list -->
     <div class="unsettled-header">
       <div class="sec-title" style="margin:0;">🧾 支出紀錄</div>
-      <button class="btn btn-green" onclick="openSettleModal()" id="settleBtn" style="display:none;font-size:13px;padding:8px 14px;">💰 結算</button>
+      <button class="btn btn-green" onclick="toggleSettlePicker()" id="settleBtn" style="display:none;font-size:13px;padding:8px 14px;">💰 結算</button>
     </div>
     <div id="expenseList"></div>
     <div id="expenseEmpty" class="empty"><div>🧾</div>還沒有支出紀錄</div>
   </div>
 
-  <!-- Settle modal -->
-  <div id="settleModal" class="hidden">
-    <div class="settle-modal-box">
-      <h2>💰 進行結算</h2>
-      <p>選擇要結算的支出項目</p>
-      <div style="display:flex;gap:10px;margin-bottom:14px;">
-        <button class="btn" style="flex:1;font-size:14px;padding:10px;" onclick="selectAllSettle(true)">全選</button>
-        <button class="btn" style="flex:1;font-size:14px;padding:10px;" onclick="selectAllSettle(false)">全不選</button>
-      </div>
-      <div id="settleExpList"></div>
-      <div style="margin-top:16px;display:flex;gap:10px;">
-        <button class="btn" style="flex:1;padding:14px;" onclick="closeSettleModal()">取消</button>
-        <button class="btn btn-green" style="flex:2;padding:14px;font-size:16px;" onclick="confirmSettle()">✅ 確認結算</button>
-      </div>
-    </div>
-  </div>
+
 
   <!-- Result tab -->
   <div id="tab-result" class="section">
@@ -1117,7 +1093,7 @@ function renderExpenses() {
   }
   empty.style.display = 'none';
 
-  // settled groups
+  // settled groups — 預設收起，加取消結算按鈕
   const settledHtml = state.settlements.map((s, idx) => {
     const exps = allExp.filter(e => s.expenseIds.includes(e.id));
     const total = exps.reduce((a,e) => a+e.amount, 0);
@@ -1128,7 +1104,11 @@ function renderExpenses() {
           <div class="settlement-group-label">✅ 結算 ${idx+1}</div>
           <div class="settlement-group-meta">${exps.length} 筆 · NT$${total.toLocaleString()}</div>
         </div>
-        <span style="font-size:16px;color:var(--muted);" id="chev-${s.id}">▶</span>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span onclick="event.stopPropagation();cancelSettlement('${s.id}')"
+            style="font-size:12px;font-weight:900;color:var(--red);padding:4px 8px;border:1.5px solid var(--red);border-radius:8px;background:#fff;">取消結算</span>
+          <span style="font-size:16px;color:var(--muted);" id="chev-${s.id}">▶</span>
+        </div>
       </div>
       <div class="settlement-group-body" id="${bodyId}" style="display:none;">
         ${exps.map(e => expReceiptHTML(e, false)).join('')}
@@ -1136,12 +1116,39 @@ function renderExpenses() {
     </div>`;
   }).join('');
 
-  // unsettled (no settlementId)
+  // unsettled
   const settledIds = new Set(state.settlements.flatMap(s => s.expenseIds));
   const unsettled = allExp.filter(e => !settledIds.has(e.id)).sort((a,b) => b.createdAt - a.createdAt);
-  const unsettledHtml = unsettled.map(e => expReceiptHTML(e, true)).join('');
 
-  list.innerHTML = settledHtml + unsettledHtml;
+  // inline settle picker（只在有未結算支出時顯示）
+  let settlePickerHtml = '';
+  if (unsettled.length > 0) {
+    const items = unsettled.map(e => {
+      const payer = state.members.find(m => m.id === e.payerId);
+      return `<div class="settle-exp-item" onclick="toggleSettleExp('${e.id}')">
+        <div class="settle-exp-check checked" id="ck-${e.id}">✓</div>
+        <div class="settle-exp-info">
+          <div class="settle-exp-desc">${e.desc}</div>
+          <div class="settle-exp-meta">${payer?.name||'?'} 先付</div>
+        </div>
+        <div class="settle-exp-amount">NT$${e.amount.toLocaleString()}</div>
+      </div>`;
+    }).join('');
+    settlePickerHtml = `<div class="settle-picker" id="settlePicker" style="display:none;">
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <button class="btn" style="flex:1;font-size:13px;padding:9px;" onclick="selectAllSettle(true)">全選</button>
+        <button class="btn" style="flex:1;font-size:13px;padding:9px;" onclick="selectAllSettle(false)">全不選</button>
+      </div>
+      <div id="settleExpList">${items}</div>
+      <button class="btn btn-green" style="width:100%;padding:14px;font-size:16px;margin-top:10px;" onclick="confirmSettle()">✅ 確認結算</button>
+    </div>`;
+  }
+
+  const unsettledHtml = unsettled.map(e => expReceiptHTML(e, true)).join('');
+  list.innerHTML = settledHtml + settlePickerHtml + unsettledHtml;
+
+  // init _settleSelected = all unsettled
+  _settleSelected = new Set(unsettled.map(e => e.id));
   settleBtn.style.display = unsettled.length > 0 ? '' : 'none';
 }
 
@@ -1260,76 +1267,54 @@ function renderResult() {
   }
 }
 
-// ── Settle modal ──
+// ── Inline settle ──
 let _settleSelected = new Set();
 
-function openSettleModal() {
-  const settledIds = new Set(state.settlements.flatMap(s => s.expenseIds));
-  const unsettled = state.expenses.filter(e => !settledIds.has(e.id));
-  _settleSelected = new Set(unsettled.map(e => e.id)); // default: all selected
-  renderSettleExpList(unsettled);
-  document.getElementById('settleModal').classList.remove('hidden');
-}
-
-function closeSettleModal() {
-  document.getElementById('settleModal').classList.add('hidden');
+function toggleSettlePicker() {
+  const picker = document.getElementById('settlePicker');
+  if (!picker) return;
+  const open = picker.style.display !== 'none';
+  picker.style.display = open ? 'none' : '';
+  document.getElementById('settleBtn').textContent = open ? '💰 結算' : '✖ 收起';
 }
 
 function selectAllSettle(val) {
   const settledIds = new Set(state.settlements.flatMap(s => s.expenseIds));
   const unsettled = state.expenses.filter(e => !settledIds.has(e.id));
   _settleSelected = val ? new Set(unsettled.map(e => e.id)) : new Set();
-  renderSettleExpList(unsettled);
-}
-
-function renderSettleExpList(unsettled) {
-  document.getElementById('settleExpList').innerHTML = unsettled.map(e => {
-    const payer = state.members.find(m => m.id === e.payerId);
-    const checked = _settleSelected.has(e.id);
-    return `<div class="settle-exp-item" onclick="toggleSettleExp('${e.id}')">
-      <div class="settle-exp-check ${checked ? 'checked' : ''}" id="ck-${e.id}">${checked ? '✓' : ''}</div>
-      <div class="settle-exp-info">
-        <div class="settle-exp-desc">${e.desc}</div>
-        <div class="settle-exp-meta">${payer?.name||'?'} 先付</div>
-      </div>
-      <div class="settle-exp-amount">NT$${e.amount.toLocaleString()}</div>
-    </div>`;
-  }).join('');
+  unsettled.forEach(e => {
+    const ck = document.getElementById('ck-' + e.id);
+    if (ck) { ck.classList.toggle('checked', _settleSelected.has(e.id)); ck.textContent = _settleSelected.has(e.id) ? '✓' : ''; }
+  });
 }
 
 function toggleSettleExp(id) {
   if (_settleSelected.has(id)) _settleSelected.delete(id);
   else _settleSelected.add(id);
   const ck = document.getElementById('ck-' + id);
-  if (ck) {
-    ck.classList.toggle('checked', _settleSelected.has(id));
-    ck.textContent = _settleSelected.has(id) ? '✓' : '';
-  }
+  if (ck) { ck.classList.toggle('checked', _settleSelected.has(id)); ck.textContent = _settleSelected.has(id) ? '✓' : ''; }
 }
 
 function confirmSettle() {
   if (_settleSelected.size === 0) return showToast('⚠️ 請至少選一筆支出');
   const expenseIds = [..._settleSelected];
-  const settlement = {
-    id: Date.now().toString(),
-    label: '結算 ' + (state.settlements.length + 1),
-    expenseIds,
-    createdAt: Date.now(),
-  };
+  const settlement = { id: Date.now().toString(), expenseIds, createdAt: Date.now() };
   state.settlements.push(settlement);
   saveToFirebase();
   renderExpenses();
-  closeSettleModal();
   showToast('✅ 結算 ' + state.settlements.length + ' 已建立！');
 }
 
-// close modal on backdrop click
-document.getElementById('settleModal').addEventListener('click', function(e) {
-  if (e.target === this) closeSettleModal();
-});
+function cancelSettlement(sid) {
+  if (!confirm('確定取消這筆結算？支出會回到未結算清單。')) return;
+  state.settlements = state.settlements.filter(s => s.id !== sid);
+  saveToFirebase();
+  renderExpenses();
+  showToast('已取消結算');
+}
 
 // ── Toggle add form ──
-let _addFormOpen = true;
+let _addFormOpen = false;
 function toggleAddForm() {
   _addFormOpen = !_addFormOpen;
   const body = document.getElementById('addFormBody');
