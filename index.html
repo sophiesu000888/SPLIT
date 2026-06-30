@@ -116,28 +116,56 @@
   .section.active { display: block; }
 
   /* ── Members ── */
-  .member-chip {
-    display: inline-flex;
+  /* member cards grid */
+  #memberChips {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .member-card {
+    background: var(--card);
+    border: 2.5px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 3px 3px 0 var(--border);
+    padding: 14px 10px 10px;
+    display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 8px;
+    position: relative;
+  }
+  .member-card-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
     background: var(--accent);
     border: 2px solid var(--border);
-    border-radius: 24px;
-    padding: 8px 14px;
-    font-weight: 900;
-    font-size: 15px;
-    margin: 5px;
-  }
-  .member-chip .del {
-    cursor: pointer;
-    font-size: 14px;
-    opacity: 0.45;
-    min-width: 24px;
-    min-height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--border);
+    flex-shrink: 0;
   }
+  .member-card-name {
+    font-size: 14px;
+    font-weight: 900;
+    text-align: center;
+    word-break: break-all;
+    line-height: 1.2;
+  }
+  .member-card-del {
+    position: absolute;
+    top: 6px; right: 8px;
+    font-size: 13px;
+    opacity: 0.3;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
+  }
+  .member-card-del:active { opacity: 1; }
 
   /* ── Input / fields ── */
   .input-row {
@@ -460,6 +488,41 @@
   .detail-desc { font-size: 14px; font-weight: 700; }
   .detail-sub { font-size: 12px; color: var(--muted); }
 
+  /* ── Settled records ── */
+  .settled-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+    align-items: flex-start;
+  }
+  .settled-item:last-child { border-bottom: none; }
+  .settled-no {
+    font-size: 11px;
+    font-weight: 900;
+    color: #fff;
+    background: var(--muted);
+    border-radius: 20px;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .settled-body { flex: 1; }
+  .settled-desc { font-size: 15px; font-weight: 900; margin-bottom: 2px; }
+  .settled-meta { font-size: 13px; color: var(--muted); }
+  .settled-participants { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+  #settledList {
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 14px;
+    padding: 4px 16px;
+    margin-bottom: 16px;
+  }
+
   /* scrollbar */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
@@ -517,12 +580,13 @@
 
   <!-- Expenses tab -->
   <div id="tab-expenses" class="section">
-    <!-- Add expense form -->
+    <!-- Add expense form (collapsible) -->
     <div class="receipt" style="margin-bottom:16px;">
-      <div class="receipt-header">
+      <div class="receipt-header" onclick="toggleAddForm()" style="cursor:pointer;user-select:none;">
         <span class="receipt-title">➕ 新增支出</span>
+        <span id="addFormChevron" style="font-size:18px;transition:transform 0.2s;">▲</span>
       </div>
-      <div class="receipt-body">
+      <div id="addFormBody" class="receipt-body">
         <div class="field-group">
           <div class="field-label">項目名稱</div>
           <div class="input-row" style="margin-bottom:0;">
@@ -574,6 +638,14 @@
     <div class="sec-title">💸 誰該付給誰</div>
     <div id="resultArea"></div>
     <div id="resultEmpty" class="empty" style="display:none;"><div>🎉</div>大家都算清楚了！</div>
+    <!-- Settled expense records -->
+    <div id="settledSection" style="display:none;">
+      <div class="sec-title" onclick="toggleSettled()" style="cursor:pointer;user-select:none;margin-top:8px;">
+        🗂️ 本次結算紀錄
+        <span id="settledChevron" style="margin-left:auto;font-size:16px;">▶</span>
+      </div>
+      <div id="settledList" style="display:none;"></div>
+    </div>
   </div>
 
 </div>
@@ -743,12 +815,14 @@ function renderMembers() {
     return;
   }
   empty.style.display = 'none';
-  chips.innerHTML = state.members.map(m => `
-    <span class="member-chip">
-      ${m.name}
-      <span class="del" onclick="removeMember('${m.id}')">✖</span>
-    </span>
-  `).join('');
+  chips.innerHTML = state.members.map(m => {
+    const initial = m.name.charAt(0);
+    return `<div class="member-card">
+      <span class="member-card-del" onclick="removeMember('${m.id}')">✖</span>
+      <div class="member-card-avatar">${initial}</div>
+      <div class="member-card-name">${m.name}</div>
+    </div>`;
+  }).join('');
 }
 
 // ── Expenses ──
@@ -982,6 +1056,51 @@ function renderResult() {
       `).join('')}
     </div>`;
   }
+
+  // 結算紀錄 — 列出所有支出
+  const settledSection = document.getElementById('settledSection');
+  const settledList = document.getElementById('settledList');
+  if (state.expenses.length > 0) {
+    settledSection.style.display = '';
+    const sorted = [...state.expenses].sort((a,b) => a.createdAt - b.createdAt);
+    settledList.innerHTML = sorted.map((e, i) => {
+      const payer = state.members.find(m => m.id === e.payerId);
+      const participants = e.splits.filter(s => s.amount > 0).map(s => {
+        const m = state.members.find(x => x.id === s.memberId);
+        return m ? `${m.name} NT$${Math.round(s.amount).toLocaleString()}` : '';
+      }).filter(Boolean).join('、');
+      return `<div class="settled-item">
+        <div class="settled-no">#${i+1}</div>
+        <div class="settled-body">
+          <div class="settled-desc">${e.desc}</div>
+          <div class="settled-meta">${payer?.name||'?'} 付了 <strong>NT$${e.amount.toLocaleString()}</strong></div>
+          <div class="settled-participants">${participants}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    settledSection.style.display = 'none';
+  }
+}
+
+// ── Toggle add form ──
+let _addFormOpen = true;
+function toggleAddForm() {
+  _addFormOpen = !_addFormOpen;
+  const body = document.getElementById('addFormBody');
+  const chevron = document.getElementById('addFormChevron');
+  body.style.display = _addFormOpen ? '' : 'none';
+  chevron.style.transform = _addFormOpen ? '' : 'rotate(180deg)';
+  chevron.textContent = _addFormOpen ? '▲' : '▼';
+}
+
+// ── Toggle settled records ──
+function toggleSettled() {
+  const list = document.getElementById('settledList');
+  const chevron = document.getElementById('settledChevron');
+  const isOpen = list.style.display !== 'none';
+  list.style.display = isOpen ? 'none' : '';
+  chevron.textContent = isOpen ? '▶' : '▼';
 }
 
 // ── Member detail ──
