@@ -1,5 +1,5 @@
-
 <!DOCTYPE html>
+
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -38,575 +38,569 @@
     font-size: 16px;
   }
 
-  /* ── Top bar ── */
-  #topbar {
-    background: var(--accent);
-    border-bottom: 3px solid var(--border);
-    padding: 0 16px;
-    height: var(--top-h);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky; top: 0; z-index: 100;
-  }
-  #topbar h1 {
-    font-family: 'Kalam', cursive;
-    font-size: 24px;
-    color: var(--border);
-    letter-spacing: 1px;
-  }
-  #topbarRight { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-  #tripNameDisplay {
-    font-size: 13px;
-    font-weight: 900;
-    color: var(--border);
-    max-width: 160px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    background: rgba(0,0,0,0.08);
-    border-radius: 20px;
-    padding: 4px 10px;
-    cursor: pointer;
-  }
-  #syncStatus {
-    font-size: 10px;
-    color: var(--border);
-    opacity: 0.55;
-  }
+/* ── Top bar ── */
+#topbar {
+background: var(–accent);
+border-bottom: 3px solid var(–border);
+padding: 0 16px;
+height: var(–top-h);
+display: flex;
+align-items: center;
+justify-content: space-between;
+position: sticky; top: 0; z-index: 100;
+}
+#topbar h1 {
+font-family: ‘Kalam’, cursive;
+font-size: 24px;
+color: var(–border);
+letter-spacing: 1px;
+}
+#topbarRight { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+#tripNameDisplay {
+font-size: 13px;
+font-weight: 900;
+color: var(–border);
+max-width: 160px;
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+background: rgba(0,0,0,0.08);
+border-radius: 20px;
+padding: 4px 10px;
+cursor: pointer;
+}
+#syncStatus {
+font-size: 10px;
+color: var(–border);
+opacity: 0.55;
+}
 
-  /* ── Bottom tab bar ── */
-  #tabs {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    height: var(--tab-h);
-    display: flex;
-    border-top: 3px solid var(--border);
-    background: #fff;
-    z-index: 100;
-  }
-  .tab-btn {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    font-size: 10px;
-    font-weight: 900;
-    border: none;
-    background: none;
-    cursor: pointer;
-    color: var(--muted);
-    padding: 6px 4px;
-    transition: color 0.15s, background 0.15s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .tab-btn .tab-icon { font-size: 22px; line-height: 1; }
-  .tab-btn.active { color: var(--accent2); background: #fff9ee; }
+/* ── Bottom tab bar ── */
+#tabs {
+position: fixed;
+bottom: 0; left: 0; right: 0;
+height: var(–tab-h);
+display: flex;
+border-top: 3px solid var(–border);
+background: #fff;
+z-index: 100;
+}
+.tab-btn {
+flex: 1;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+gap: 2px;
+font-size: 10px;
+font-weight: 900;
+border: none;
+background: none;
+cursor: pointer;
+color: var(–muted);
+padding: 6px 4px;
+transition: color 0.15s, background 0.15s;
+-webkit-tap-highlight-color: transparent;
+}
+.tab-btn .tab-icon { font-size: 22px; line-height: 1; }
+.tab-btn.active { color: var(–accent2); background: #fff9ee; }
 
-  /* ── Main content ── */
-  #main {
-    padding: 16px 14px calc(var(--tab-h) + 16px);
-    min-height: calc(100vh - var(--top-h));
-  }
+/* ── Main content ── */
+#main {
+padding: 16px 14px calc(var(–tab-h) + 16px);
+min-height: calc(100vh - var(–top-h));
+}
 
-  /* ── Section ── */
-  .section { display: none; }
-  .section.active { display: block; }
+/* ── Section ── */
+.section { display: none; }
+.section.active { display: block; }
 
-  /* ── Members ── */
-  /* member cards grid */
-  #memberChips {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-  .member-card {
-    background: var(--card);
-    border: 2.5px solid var(--border);
-    border-radius: 16px;
-    box-shadow: 3px 3px 0 var(--border);
-    padding: 14px 10px 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    position: relative;
-  }
-  .member-card-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: var(--accent);
-    border: 2px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    font-weight: 900;
-    color: var(--border);
-    flex-shrink: 0;
-  }
-  .member-card-name {
-    font-size: 14px;
-    font-weight: 900;
-    text-align: center;
-    word-break: break-all;
-    line-height: 1.2;
-  }
-  .member-card-del {
-    position: absolute;
-    top: 6px; right: 8px;
-    font-size: 13px;
-    opacity: 0.3;
-    cursor: pointer;
-    line-height: 1;
-    padding: 4px;
-  }
-  .member-card-del:active { opacity: 1; }
+/* ── Members ── */
+/* member cards grid */
+#memberChips {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 10px;
+margin-bottom: 16px;
+}
+.member-card {
+background: var(–card);
+border: 2.5px solid var(–border);
+border-radius: 16px;
+box-shadow: 3px 3px 0 var(–border);
+padding: 14px 10px 10px;
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 8px;
+position: relative;
+}
+.member-card-avatar {
+width: 48px;
+height: 48px;
+border-radius: 50%;
+background: var(–accent);
+border: 2px solid var(–border);
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 22px;
+font-weight: 900;
+color: var(–border);
+flex-shrink: 0;
+}
+.member-card-name {
+font-size: 14px;
+font-weight: 900;
+text-align: center;
+word-break: break-all;
+line-height: 1.2;
+}
+.member-card-del {
+position: absolute;
+top: 6px; right: 8px;
+font-size: 13px;
+opacity: 0.3;
+cursor: pointer;
+line-height: 1;
+padding: 4px;
+}
+.member-card-del:active { opacity: 1; }
 
-  /* ── Input / fields ── */
-  .input-row {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 14px;
-  }
-  input[type=text], input[type=number], select {
-    border: 2.5px solid var(--border);
-    border-radius: 12px;
-    padding: 13px 14px;
-    font-size: 16px;
-    font-family: 'Noto Sans TC', sans-serif;
-    background: #fff;
-    outline: none;
-    width: 100%;
-    -webkit-appearance: none;
-  }
-  input:focus, select:focus { border-color: var(--accent2); }
-  .input-row input, .input-row select { flex: 1; }
+/* ── Input / fields ── */
+.input-row {
+display: flex;
+gap: 10px;
+margin-bottom: 14px;
+}
+input[type=text], input[type=number], select {
+border: 2.5px solid var(–border);
+border-radius: 12px;
+padding: 13px 14px;
+font-size: 16px;
+font-family: ‘Noto Sans TC’, sans-serif;
+background: #fff;
+outline: none;
+width: 100%;
+-webkit-appearance: none;
+}
+input:focus, select:focus { border-color: var(–accent2); }
+.input-row input, .input-row select { flex: 1; }
 
-  .btn {
-    border: 2.5px solid var(--border);
-    border-radius: 12px;
-    padding: 13px 18px;
-    font-size: 15px;
-    font-weight: 900;
-    font-family: 'Noto Sans TC', sans-serif;
-    cursor: pointer;
-    background: var(--card);
-    box-shadow: 3px 3px 0 var(--border);
-    white-space: nowrap;
-    min-height: 48px;
-    -webkit-tap-highlight-color: transparent;
-    transition: transform 0.1s, box-shadow 0.1s;
-  }
-  .btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--border); }
-  .btn-accent { background: var(--accent); }
-  .btn-wide { width: 100%; margin-top: 6px; font-size: 16px; padding: 15px; }
-  .btn-green { background: #c8e6c9; color: var(--green); border-color: var(--green); box-shadow: 3px 3px 0 var(--green); }
-  .btn-red { background: #ffcdd2; color: var(--red); border-color: var(--red); box-shadow: 3px 3px 0 var(--red); }
+.btn {
+border: 2.5px solid var(–border);
+border-radius: 12px;
+padding: 13px 18px;
+font-size: 15px;
+font-weight: 900;
+font-family: ‘Noto Sans TC’, sans-serif;
+cursor: pointer;
+background: var(–card);
+box-shadow: 3px 3px 0 var(–border);
+white-space: nowrap;
+min-height: 48px;
+-webkit-tap-highlight-color: transparent;
+transition: transform 0.1s, box-shadow 0.1s;
+}
+.btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(–border); }
+.btn-accent { background: var(–accent); }
+.btn-wide { width: 100%; margin-top: 6px; font-size: 16px; padding: 15px; }
+.btn-green { background: #c8e6c9; color: var(–green); border-color: var(–green); box-shadow: 3px 3px 0 var(–green); }
+.btn-red { background: #ffcdd2; color: var(–red); border-color: var(–red); box-shadow: 3px 3px 0 var(–red); }
 
-  /* ── Receipt card ── */
-  .receipt {
-    background: var(--receipt);
-    border: 2.5px solid var(--border);
-    border-radius: 14px;
-    margin-bottom: 14px;
-    overflow: hidden;
-    box-shadow: 3px 3px 0 var(--border);
-    position: relative;
-  }
-  .receipt-header {
-    background: var(--accent);
-    padding: 10px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 2px solid var(--border);
-    gap: 8px;
-  }
-  .receipt-title { font-weight: 900; font-size: 16px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .receipt-amount { font-weight: 900; font-size: 20px; font-family: monospace; white-space: nowrap; flex-shrink: 0; }
-  .receipt-body { padding: 12px 16px; }
-  .receipt-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-    padding: 3px 0;
-    color: var(--muted);
-  }
-  .receipt-row strong { color: var(--text); }
-  .receipt-tags { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
-  .tag {
-    background: #fff;
-    border: 1.5px solid #ddd;
-    border-radius: 12px;
-    padding: 4px 10px;
-    font-size: 13px;
-    font-weight: 700;
-  }
-  .tag.assigned { background: #e3f2fd; border-color: #90caf9; color: var(--blue); }
-  .receipt-del {
-    cursor: pointer;
-    font-size: 15px;
-    opacity: 0.35;
-    min-width: 36px; min-height: 36px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .receipt-del:active { opacity: 1; }
+/* ── Receipt card ── */
+.receipt {
+background: var(–receipt);
+border: 2.5px solid var(–border);
+border-radius: 14px;
+margin-bottom: 14px;
+overflow: hidden;
+box-shadow: 3px 3px 0 var(–border);
+position: relative;
+}
+.receipt-header {
+background: var(–accent);
+padding: 10px 16px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+border-bottom: 2px solid var(–border);
+gap: 8px;
+}
+.receipt-title { font-weight: 900; font-size: 16px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.receipt-amount { font-weight: 900; font-size: 20px; font-family: monospace; white-space: nowrap; flex-shrink: 0; }
+.receipt-body { padding: 12px 16px; }
+.receipt-row {
+display: flex;
+justify-content: space-between;
+font-size: 14px;
+padding: 3px 0;
+color: var(–muted);
+}
+.receipt-row strong { color: var(–text); }
+.receipt-tags { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+.tag {
+background: #fff;
+border: 1.5px solid #ddd;
+border-radius: 12px;
+padding: 4px 10px;
+font-size: 13px;
+font-weight: 700;
+}
+.tag.assigned { background: #e3f2fd; border-color: #90caf9; color: var(–blue); }
+.receipt-del {
+cursor: pointer;
+font-size: 15px;
+opacity: 0.35;
+min-width: 36px; min-height: 36px;
+display: flex; align-items: center; justify-content: center;
+flex-shrink: 0;
+}
+.receipt-del:active { opacity: 1; }
 
-  /* ── Split type ── */
-  .split-toggle {
-    display: flex;
-    border: 2.5px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 12px;
-  }
-  .split-toggle label {
-    flex: 1;
-    text-align: center;
-    padding: 12px 4px;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    background: #fff;
-    transition: background 0.15s;
-  }
-  .split-toggle input[type=radio] { display: none; }
-  .split-toggle input[type=radio]:checked + label { background: var(--accent); }
+/* ── Split type ── */
+.split-toggle {
+display: flex;
+border: 2.5px solid var(–border);
+border-radius: 12px;
+overflow: hidden;
+margin-bottom: 12px;
+}
+.split-toggle label {
+flex: 1;
+text-align: center;
+padding: 12px 4px;
+font-size: 15px;
+font-weight: 700;
+cursor: pointer;
+background: #fff;
+transition: background 0.15s;
+}
+.split-toggle input[type=radio] { display: none; }
+.split-toggle input[type=radio]:checked + label { background: var(–accent); }
 
-  /* ── Custom split ── */
-  .custom-split-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
-    font-size: 15px;
-    font-weight: 700;
-  }
-  .custom-split-row:last-child { border-bottom: none; }
-  .custom-split-row input {
-    width: 110px;
-    text-align: right;
-    border: 2px solid #ddd;
-    border-radius: 10px;
-    padding: 10px 12px;
-    font-size: 16px;
-    font-family: monospace;
-  }
-  #customTotal { font-size: 14px; color: var(--muted); margin: 8px 0 4px; font-weight: 700; }
-  #customTotal.ok { color: var(--green); }
-  #customTotal.over { color: var(--red); }
+/* ── Custom split ── */
+.custom-split-row {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 10px 0;
+border-bottom: 1px solid #eee;
+font-size: 15px;
+font-weight: 700;
+}
+.custom-split-row:last-child { border-bottom: none; }
+.custom-split-row input {
+width: 110px;
+text-align: right;
+border: 2px solid #ddd;
+border-radius: 10px;
+padding: 10px 12px;
+font-size: 16px;
+font-family: monospace;
+}
+#customTotal { font-size: 14px; color: var(–muted); margin: 8px 0 4px; font-weight: 700; }
+#customTotal.ok { color: var(–green); }
+#customTotal.over { color: var(–red); }
 
-  /* ── Section title ── */
-  .sec-title {
-    font-size: 17px;
-    font-weight: 900;
-    margin: 16px 0 10px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .sec-title:first-child { margin-top: 0; }
+/* ── Section title ── */
+.sec-title {
+font-size: 17px;
+font-weight: 900;
+margin: 16px 0 10px;
+display: flex;
+align-items: center;
+gap: 6px;
+}
+.sec-title:first-child { margin-top: 0; }
 
-  /* ── Field label ── */
-  .field-label {
-    font-size: 12px;
-    font-weight: 900;
-    color: var(--muted);
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .field-group { margin-bottom: 14px; }
+/* ── Field label ── */
+.field-label {
+font-size: 12px;
+font-weight: 900;
+color: var(–muted);
+margin-bottom: 6px;
+text-transform: uppercase;
+letter-spacing: 0.5px;
+}
+.field-group { margin-bottom: 14px; }
 
-  /* ── Summary: card list instead of table ── */
-  .summary-card {
-    background: #fff;
-    border: 2px solid #e0e0e0;
-    border-radius: 14px;
-    margin-bottom: 10px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: border-color 0.15s;
-  }
-  .summary-card:active { border-color: var(--accent2); }
-  .summary-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 16px 6px;
-  }
-  .summary-name { font-size: 19px; font-weight: 900; }
-  .summary-balance {
-    font-size: 20px;
-    font-weight: 900;
-    font-family: monospace;
-  }
-  .summary-balance.pos { color: var(--green); }
-  .summary-balance.neg { color: var(--red); }
-  .summary-balance.zero { color: var(--muted); }
-  .summary-card-sub {
-    display: flex;
-    padding: 4px 16px 16px;
-    gap: 16px;
-    font-size: 14px;
-    color: var(--muted);
-  }
-  .summary-card-sub span strong { color: var(--text); }
-  .summary-total {
-    background: #fffde7;
-    border: 2px solid var(--border);
-    border-radius: 14px;
-    padding: 13px 16px;
-    display: flex;
-    justify-content: space-between;
-    font-weight: 900;
-    font-size: 16px;
-    margin-bottom: 16px;
-  }
+/* ── Summary: card list instead of table ── */
+.summary-card {
+background: #fff;
+border: 2px solid #e0e0e0;
+border-radius: 14px;
+margin-bottom: 10px;
+overflow: hidden;
+cursor: pointer;
+transition: border-color 0.15s;
+}
+.summary-card:active { border-color: var(–accent2); }
+.summary-card-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 16px 16px 6px;
+}
+.summary-name { font-size: 19px; font-weight: 900; }
+.summary-balance {
+font-size: 20px;
+font-weight: 900;
+font-family: monospace;
+}
+.summary-balance.pos { color: var(–green); }
+.summary-balance.neg { color: var(–red); }
+.summary-balance.zero { color: var(–muted); }
+.summary-card-sub {
+display: flex;
+padding: 4px 16px 16px;
+gap: 16px;
+font-size: 14px;
+color: var(–muted);
+}
+.summary-card-sub span strong { color: var(–text); }
+.summary-total {
+background: #fffde7;
+border: 2px solid var(–border);
+border-radius: 14px;
+padding: 13px 16px;
+display: flex;
+justify-content: space-between;
+font-weight: 900;
+font-size: 16px;
+margin-bottom: 16px;
+}
 
-  /* ── Result transfer ── */
-  .result-card {
-    background: #fff;
-    border: 2.5px solid var(--border);
-    border-radius: 14px;
-    margin-bottom: 12px;
-    overflow: hidden;
-    box-shadow: 3px 3px 0 var(--border);
-  }
-  .result-header {
-    background: #e8f5e9;
-    padding: 10px 16px;
-    font-weight: 900;
-    font-size: 14px;
-    border-bottom: 2px solid var(--border);
-    color: var(--green);
-  }
-  .result-row {
-    padding: 14px 16px;
-    display: flex;
-    align-items: center;
-    border-bottom: 1px solid #eee;
-    font-size: 16px;
-    font-weight: 700;
-    gap: 6px;
-  }
-  .result-row:last-child { border-bottom: none; }
-  .result-from { flex: 1; }
-  .result-arrow { color: var(--accent2); font-size: 20px; }
-  .result-to { flex: 1; text-align: right; }
-  .result-amount {
-    font-family: monospace;
-    font-size: 18px;
-    font-weight: 900;
-    color: var(--blue);
-    background: #e3f2fd;
-    border-radius: 10px;
-    padding: 4px 10px;
-  }
+/* ── Result transfer ── */
+.result-card {
+background: #fff;
+border: 2.5px solid var(–border);
+border-radius: 14px;
+margin-bottom: 12px;
+overflow: hidden;
+box-shadow: 3px 3px 0 var(–border);
+}
+.result-header {
+background: #e8f5e9;
+padding: 10px 16px;
+font-weight: 900;
+font-size: 14px;
+border-bottom: 2px solid var(–border);
+color: var(–green);
+}
+.result-row {
+padding: 14px 16px;
+display: flex;
+align-items: center;
+border-bottom: 1px solid #eee;
+font-size: 16px;
+font-weight: 700;
+gap: 6px;
+}
+.result-row:last-child { border-bottom: none; }
+.result-from { flex: 1; }
+.result-arrow { color: var(–accent2); font-size: 20px; }
+.result-to { flex: 1; text-align: right; }
+.result-amount {
+font-family: monospace;
+font-size: 18px;
+font-weight: 900;
+color: var(–blue);
+background: #e3f2fd;
+border-radius: 10px;
+padding: 4px 10px;
+}
 
-  /* ── Empty state ── */
-  .empty { text-align: center; color: var(--muted); padding: 48px 16px; font-size: 15px; }
-  .empty div { font-size: 48px; margin-bottom: 10px; }
+/* ── Empty state ── */
+.empty { text-align: center; color: var(–muted); padding: 48px 16px; font-size: 15px; }
+.empty div { font-size: 48px; margin-bottom: 10px; }
 
-  /* ── Trip selector modal ── */
-  #tripModal {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.55);
-    z-index: 200;
-    display: flex; align-items: flex-end; justify-content: center;
-  }
-  #tripModal.hidden { display: none; }
-  .modal-box {
-    background: var(--card);
-    border: 3px solid var(--border);
-    border-radius: 20px 20px 0 0;
-    padding: 20px 20px 36px;
-    width: 100%;
-    max-height: 80vh;
-    overflow-y: auto;
-    box-shadow: 0 -4px 0 var(--border);
-  }
-  .modal-box h2 { font-size: 20px; margin-bottom: 16px; font-weight: 900; }
-  .trip-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border: 2.5px solid #e0e0e0;
-    border-radius: 14px;
-    padding: 14px 16px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    font-weight: 700;
-    font-size: 16px;
-    min-height: 54px;
-  }
-  .trip-item.active { border-color: var(--accent2); background: #fff9ee; }
+/* ── Trip selector modal ── */
+#tripModal {
+position: fixed; inset: 0;
+background: rgba(0,0,0,0.55);
+z-index: 200;
+display: flex; align-items: flex-end; justify-content: center;
+}
+#tripModal.hidden { display: none; }
+.modal-box {
+background: var(–card);
+border: 3px solid var(–border);
+border-radius: 20px 20px 0 0;
+padding: 20px 20px 36px;
+width: 100%;
+max-height: 80vh;
+overflow-y: auto;
+box-shadow: 0 -4px 0 var(–border);
+}
+.modal-box h2 { font-size: 20px; margin-bottom: 16px; font-weight: 900; }
+.trip-item {
+display: flex;
+align-items: center;
+justify-content: space-between;
+border: 2.5px solid #e0e0e0;
+border-radius: 14px;
+padding: 14px 16px;
+margin-bottom: 10px;
+cursor: pointer;
+font-weight: 700;
+font-size: 16px;
+min-height: 54px;
+}
+.trip-item.active { border-color: var(–accent2); background: #fff9ee; }
 
-  /* ── Member detail card ── */
-  .detail-card {
-    background: #fff;
-    border: 2px solid var(--border);
-    border-radius: 14px;
-    margin-bottom: 16px;
-    overflow: hidden;
-    box-shadow: 3px 3px 0 var(--border);
-  }
-  .detail-header {
-    background: #e3f2fd;
-    border-bottom: 2px solid var(--border);
-    padding: 8px 14px;
-    font-size: 14px;
-    font-weight: 900;
-    color: var(--blue);
-  }
-  .detail-section-label {
-    padding: 6px 14px;
-    font-size: 12px;
-    font-weight: 900;
-    color: var(--muted);
-    background: #fafafa;
-    border-bottom: 1px solid #eee;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .detail-row {
-    padding: 9px 14px;
-    border-bottom: 1px solid #f0f0f0;
-    display: grid;
-    grid-template-columns: 20px 1fr;
-    grid-template-rows: auto auto;
-    gap: 1px 6px;
-  }
-  .detail-row:last-child { border-bottom: none; }
-  .detail-icon { grid-row: 1 / 3; align-self: center; font-size: 16px; }
-  .detail-desc { font-size: 14px; font-weight: 700; }
-  .detail-sub { font-size: 12px; color: var(--muted); }
+/* ── Member detail card ── */
+.detail-card {
+background: #fff;
+border: 2px solid var(–border);
+border-radius: 14px;
+margin-bottom: 16px;
+overflow: hidden;
+box-shadow: 3px 3px 0 var(–border);
+}
+.detail-header {
+background: #e3f2fd;
+border-bottom: 2px solid var(–border);
+padding: 8px 14px;
+font-size: 14px;
+font-weight: 900;
+color: var(–blue);
+}
+.detail-section-label {
+padding: 6px 14px;
+font-size: 12px;
+font-weight: 900;
+color: var(–muted);
+background: #fafafa;
+border-bottom: 1px solid #eee;
+text-transform: uppercase;
+letter-spacing: 0.5px;
+}
+.detail-row {
+padding: 9px 14px;
+border-bottom: 1px solid #f0f0f0;
+display: grid;
+grid-template-columns: 20px 1fr;
+grid-template-rows: auto auto;
+gap: 1px 6px;
+}
+.detail-row:last-child { border-bottom: none; }
+.detail-icon { grid-row: 1 / 3; align-self: center; font-size: 16px; }
+.detail-desc { font-size: 14px; font-weight: 700; }
+.detail-sub { font-size: 12px; color: var(–muted); }
 
-  /* ── Settlement group on expense tab ── */
-  .settlement-group {
-    border: 2.5px solid var(--border);
-    border-radius: 16px;
-    overflow: hidden;
-    margin-bottom: 14px;
-    box-shadow: 3px 3px 0 var(--border);
-  }
-  .settlement-group-header {
-    background: #e8f5e9;
-    border-bottom: 2px solid var(--border);
-    padding: 11px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    cursor: pointer;
-    user-select: none;
-  }
-  .settlement-group-label { font-weight: 900; font-size: 15px; color: var(--green); }
-  .settlement-group-meta { font-size: 12px; color: var(--muted); }
-  .settlement-group-body { background: var(--receipt); }
-  .settlement-group-body .receipt {
-    border: none;
-    border-bottom: 1px solid #e8e8e8;
-    border-radius: 0;
-    box-shadow: none;
-    margin-bottom: 0;
-  }
-  .settlement-group-body .receipt:last-child { border-bottom: none; }
+/* ── Settlement group on expense tab ── */
+.settlement-group {
+border: 2.5px solid var(–border);
+border-radius: 16px;
+overflow: hidden;
+margin-bottom: 14px;
+box-shadow: 3px 3px 0 var(–border);
+}
+.settlement-group-header {
+background: #e8f5e9;
+border-bottom: 2px solid var(–border);
+padding: 11px 16px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+cursor: pointer;
+user-select: none;
+}
+.settlement-group-label { font-weight: 900; font-size: 15px; color: var(–green); }
+.settlement-group-meta { font-size: 12px; color: var(–muted); }
+.settlement-group-body { background: var(–receipt); }
+.settlement-group-body .receipt {
+border: none;
+border-bottom: 1px solid #e8e8e8;
+border-radius: 0;
+box-shadow: none;
+margin-bottom: 0;
+}
+.settlement-group-body .receipt:last-child { border-bottom: none; }
 
-  /* ── Unsettled section header ── */
-  .unsettled-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-  }
+/* ── Unsettled section header ── */
+.unsettled-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin-bottom: 10px;
+}
 
-  /* ── Settle picker (inline) ── */
-  .settle-picker {
-    background: #fff;
-    border: 2.5px solid var(--green);
-    border-radius: 16px;
-    padding: 14px;
-    margin-bottom: 14px;
-    box-shadow: 3px 3px 0 var(--green);
-  }
+/* ── Settle picker (inline) ── */
+.settle-picker {
+background: #fff;
+border: 2.5px solid var(–green);
+border-radius: 16px;
+padding: 14px;
+margin-bottom: 14px;
+box-shadow: 3px 3px 0 var(–green);
+}
 
-  /* settle modal removed */
-  .settle-exp-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 13px 0;
-    border-bottom: 1px solid #eee;
-    font-size: 15px;
-  }
-  .settle-exp-item:last-child { border-bottom: none; }
-  .settle-exp-check {
-    width: 26px; height: 26px;
-    border: 2.5px solid var(--border);
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    cursor: pointer;
-    background: #fff;
-    font-size: 16px;
-    transition: background 0.15s;
-  }
-  .settle-exp-check.checked { background: var(--accent); }
-  .settle-exp-info { flex: 1; }
-  .settle-exp-desc { font-weight: 900; }
-  .settle-exp-meta { font-size: 13px; color: var(--muted); }
-  .settle-exp-amount { font-weight: 900; font-family: monospace; color: var(--blue); }
+/* settle modal removed */
+.settle-exp-item {
+display: flex;
+align-items: center;
+gap: 12px;
+padding: 13px 0;
+border-bottom: 1px solid #eee;
+font-size: 15px;
+}
+.settle-exp-item:last-child { border-bottom: none; }
+.settle-exp-check {
+width: 26px; height: 26px;
+border: 2.5px solid var(–border);
+border-radius: 8px;
+display: flex; align-items: center; justify-content: center;
+flex-shrink: 0;
+cursor: pointer;
+background: #fff;
+font-size: 16px;
+transition: background 0.15s;
+}
+.settle-exp-check.checked { background: var(–accent); }
+.settle-exp-info { flex: 1; }
+.settle-exp-desc { font-weight: 900; }
+.settle-exp-meta { font-size: 13px; color: var(–muted); }
+.settle-exp-amount { font-weight: 900; font-family: monospace; color: var(–blue); }
 
-  /* ── Settled records ── */
-  .settled-item {
-    display: flex;
-    gap: 12px;
-    padding: 12px 0;
-    border-bottom: 1px solid #f0f0f0;
-    align-items: flex-start;
-  }
-  .settled-item:last-child { border-bottom: none; }
-  .settled-no {
-    font-size: 11px;
-    font-weight: 900;
-    color: #fff;
-    background: var(--muted);
-    border-radius: 20px;
-    min-width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-  .settled-body { flex: 1; }
-  .settled-desc { font-size: 15px; font-weight: 900; margin-bottom: 2px; }
-  .settled-meta { font-size: 13px; color: var(--muted); }
-  .settled-participants { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
-  #settledList {
-    background: #fff;
-    border: 2px solid #e0e0e0;
-    border-radius: 14px;
-    padding: 4px 16px;
-    margin-bottom: 16px;
-  }
-
-  /* scrollbar */
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+/* ── Settled records ── */
+.settled-item {
+display: flex;
+gap: 12px;
+padding: 12px 0;
+border-bottom: 1px solid #f0f0f0;
+align-items: flex-start;
+}
+.settled-item:last-child { border-bottom: none; }
+.settled-no {
+font-size: 11px;
+font-weight: 900;
+color: #fff;
+background: var(–muted);
+border-radius: 20px;
+min-width: 24px;
+height: 24px;
+display: flex;
+align-items: center;
+justify-content: center;
+flex-shrink: 0;
+margin-top: 2px;
+}
+.settled-body { flex: 1; }
+.settled-desc { font-size: 15px; font-weight: 900; margin-bottom: 2px; }
+.settled-meta { font-size: 13px; color: var(–muted); }
+.settled-participants { font-size: 12px; color: var(–muted); margin-top: 3px; line-height: 1.5; }
+/* scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
 </style>
+
 </head>
 <body>
 
 <!-- Trip modal -->
+
 <div id="tripModal">
   <div class="modal-box">
     <h2>👥 選擇群組</h2>
@@ -619,6 +613,7 @@
 </div>
 
 <!-- Top bar -->
+
 <div id="topbar">
   <h1>💸 Oops I paid!</h1>
   <div id="topbarRight">
@@ -628,6 +623,7 @@
 </div>
 
 <!-- Bottom tab bar -->
+
 <div id="tabs">
   <button class="tab-btn active" onclick="switchTab('members')">
     <span class="tab-icon">👥</span>成員
@@ -635,15 +631,14 @@
   <button class="tab-btn" onclick="switchTab('expenses')">
     <span class="tab-icon">🧾</span>支出
   </button>
-  <button class="tab-btn" onclick="switchTab('result')">
-    <span class="tab-icon">💰</span>結算
-  </button>
 </div>
 
 <!-- Main -->
+
 <div id="main">
 
   <!-- Members tab -->
+
   <div id="tab-members" class="section active">
     <div class="sec-title">👥 成員</div>
     <div class="input-row">
@@ -655,6 +650,7 @@
   </div>
 
   <!-- Expenses tab -->
+
   <div id="tab-expenses" class="section">
     <!-- Add expense form (collapsible) -->
     <div class="receipt" style="margin-bottom:16px;">
@@ -700,33 +696,16 @@
       </div>
     </div>
 
-    <!-- Expense list -->
-    <div class="unsettled-header">
-      <div class="sec-title" style="margin:0;">🧾 支出紀錄</div>
-      <button class="btn btn-green" onclick="toggleSettlePicker()" id="settleBtn" style="display:none;font-size:13px;padding:8px 14px;">💰 結算</button>
-    </div>
-    <div id="expenseList"></div>
-    <div id="expenseEmpty" class="empty"><div>🧾</div>還沒有支出紀錄</div>
-  </div>
+```
+<!-- Expense list -->
+<div class="unsettled-header">
+  <div class="sec-title" style="margin:0;">🧾 支出紀錄</div>
+  <button class="btn btn-green" onclick="toggleSettlePicker()" id="settleBtn" style="display:none;font-size:13px;padding:8px 14px;">💰 結算</button>
+</div>
+<div id="expenseList"></div>
+<div id="expenseEmpty" class="empty"><div>🧾</div>還沒有支出紀錄</div>
+```
 
-
-
-  <!-- Result tab -->
-  <div id="tab-result" class="section">
-    <div class="sec-title">📊 個人小計 <span style="font-size:12px;font-weight:400;color:var(--muted);">點擊看明細</span></div>
-    <div id="summaryArea"></div>
-    <div id="memberDetail" style="display:none;"></div>
-    <div class="sec-title">💸 誰該付給誰</div>
-    <div id="resultArea"></div>
-    <div id="resultEmpty" class="empty" style="display:none;"><div>🎉</div>大家都算清楚了！</div>
-    <!-- Settled expense records -->
-    <div id="settledSection" style="display:none;">
-      <div class="sec-title" onclick="toggleSettled()" style="cursor:pointer;user-select:none;margin-top:8px;">
-        🗂️ 本次結算紀錄
-        <span id="settledChevron" style="margin-left:auto;font-size:16px;">▶</span>
-      </div>
-      <div id="settledList" style="display:none;"></div>
-    </div>
   </div>
 
 </div>
@@ -892,13 +871,12 @@ function setSyncStatus(txt) {
 // ── Tab switching ──
 function switchTab(name) {
   document.querySelectorAll('.tab-btn').forEach((b,i) => {
-    const names = ['members','expenses','result'];
+    const names = ['members','expenses'];
     b.classList.toggle('active', names[i] === name);
   });
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   if (name === 'expenses') updatePayerSelect();
-  if (name === 'result') renderResult();
 }
 
 // ── Members ──
@@ -1057,6 +1035,83 @@ function removeExpense(id) {
   renderExpenses();
 }
 
+// 計算一組支出的個人小計＋誰該付給誰，回傳 HTML 字串
+function calcSettlementHTML(exps) {
+  if (!exps.length) return '<div class="empty" style="padding:20px;"><div>📭</div>沒有支出資料</div>';
+
+  const paid = {}, owed = {};
+  state.members.forEach(m => { paid[m.id] = 0; owed[m.id] = 0; });
+  exps.forEach(e => {
+    paid[e.payerId] = (paid[e.payerId] || 0) + e.amount;
+    e.splits.forEach(s => { owed[s.memberId] = (owed[s.memberId] || 0) + s.amount; });
+  });
+  const net = {};
+  state.members.forEach(m => { net[m.id] = (paid[m.id]||0) - (owed[m.id]||0); });
+
+  // 只列出有參與這組支出的成員（避免顯示一堆 0）
+  const involvedIds = new Set();
+  exps.forEach(e => { involvedIds.add(e.payerId); e.splits.forEach(s => { if (s.amount > 0) involvedIds.add(s.memberId); }); });
+  const involvedMembers = state.members.filter(m => involvedIds.has(m.id));
+
+  const totalPaid = Object.values(paid).reduce((a,b)=>a+b,0);
+  const summaryCards = involvedMembers.map(m => {
+    const n = net[m.id] || 0;
+    const cls = n > 0.5 ? 'pos' : n < -0.5 ? 'neg' : 'zero';
+    const label = n > 0.5 ? '別人欠你' : n < -0.5 ? '你欠別人' : '已結清';
+    const sign = n > 0.5 ? '＋' : '';
+    return `<div class="summary-card">
+      <div class="summary-card-header">
+        <span class="summary-name">${m.name}</span>
+        <span class="summary-balance ${cls}">${sign}NT$ ${Math.abs(Math.round(n)).toLocaleString()}</span>
+      </div>
+      <div class="summary-card-sub">
+        <span>已付 <strong>NT$ ${Math.round(paid[m.id]||0).toLocaleString()}</strong></span>
+        <span>應攤 <strong>NT$ ${Math.round(owed[m.id]||0).toLocaleString()}</strong></span>
+        <span style="color:${cls==='pos'?'var(--green)':cls==='neg'?'var(--red)':'var(--muted)'};">${label}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // greedy 轉帳建議
+  const creditors = [], debtors = [];
+  state.members.forEach(m => {
+    if (net[m.id] > 0.005) creditors.push({ id: m.id, name: m.name, amt: net[m.id] });
+    if (net[m.id] < -0.005) debtors.push({ id: m.id, name: m.name, amt: -net[m.id] });
+  });
+  const txs = [];
+  let ci = 0, di = 0;
+  while (ci < creditors.length && di < debtors.length) {
+    const c = creditors[ci], d = debtors[di];
+    const amt = Math.min(c.amt, d.amt);
+    txs.push({ from: d.name, to: c.name, amount: Math.round(amt) });
+    c.amt -= amt; d.amt -= amt;
+    if (c.amt < 0.005) ci++;
+    if (d.amt < 0.005) di++;
+  }
+
+  const resultHtml = txs.length === 0
+    ? '<div class="empty" style="padding:20px;"><div>🎉</div>大家都算清楚了！</div>'
+    : `<div class="result-card">
+        <div class="result-header">最少 ${txs.length} 筆轉帳搞定 🎯</div>
+        ${txs.map(t => `
+          <div class="result-row">
+            <span class="result-from">${t.from}</span>
+            <span class="result-arrow">→</span>
+            <span class="result-to">${t.to}</span>
+            <span class="result-amount">NT$${t.amount.toLocaleString()}</span>
+          </div>
+        `).join('')}
+      </div>`;
+
+  return `
+    <div class="sec-title" style="margin-top:0;">📊 個人小計</div>
+    ${summaryCards}
+    <div class="summary-total"><span>總支出</span><span>NT$ ${Math.round(totalPaid).toLocaleString()}</span></div>
+    <div class="sec-title">💸 誰該付給誰</div>
+    ${resultHtml}
+  `;
+}
+
 function expReceiptHTML(e, removable=true) {
   const payer = state.members.find(m => m.id === e.payerId);
   const payerName = payer ? payer.name : '未知';
@@ -1111,6 +1166,8 @@ function renderExpenses() {
         </div>
       </div>
       <div class="settlement-group-body" id="${bodyId}" style="display:none;">
+        ${calcSettlementHTML(exps)}
+        <div class="sec-title">🧾 支出明細</div>
         ${exps.map(e => expReceiptHTML(e, false)).join('')}
       </div>
     </div>`;
@@ -1159,112 +1216,6 @@ function toggleSettlementGroup(bodyId) {
   const open = body.style.display !== 'none';
   body.style.display = open ? 'none' : '';
   if (chev) chev.textContent = open ? '▶' : '▼';
-}
-
-// ── Result calculation ──
-function renderResult() {
-  if (!state.members.length || !state.expenses.length) {
-    document.getElementById('summaryArea').innerHTML = '';
-    document.getElementById('resultArea').innerHTML = '<div class="empty"><div>📭</div>還沒有資料可結算</div>';
-    document.getElementById('resultEmpty').style.display = 'none';
-    return;
-  }
-
-  // net[memberId] = paid - owed
-  const paid = {}, owed = {};
-  state.members.forEach(m => { paid[m.id] = 0; owed[m.id] = 0; });
-  state.expenses.forEach(e => {
-    paid[e.payerId] = (paid[e.payerId] || 0) + e.amount;
-    e.splits.forEach(s => { owed[s.memberId] = (owed[s.memberId] || 0) + s.amount; });
-  });
-
-  const net = {};
-  state.members.forEach(m => { net[m.id] = (paid[m.id]||0) - (owed[m.id]||0); });
-
-  // Summary table
-  const totalPaid = Object.values(paid).reduce((a,b)=>a+b,0);
-  const summaryCards = state.members.map(m => {
-    const n = net[m.id] || 0;
-    const cls = n > 0.5 ? 'pos' : n < -0.5 ? 'neg' : 'zero';
-    const label = n > 0.5 ? '別人欠你' : n < -0.5 ? '你欠別人' : '已結清';
-    const sign = n > 0.5 ? '＋' : '';
-    return `<div class="summary-card" onclick="showMemberDetail('${m.id}')">
-      <div class="summary-card-header">
-        <span class="summary-name">${m.name}</span>
-        <span class="summary-balance ${cls}">${sign}NT$ ${Math.abs(Math.round(n)).toLocaleString()}</span>
-      </div>
-      <div class="summary-card-sub">
-        <span>已付 <strong>NT$ ${Math.round(paid[m.id]||0).toLocaleString()}</strong></span>
-        <span>應攤 <strong>NT$ ${Math.round(owed[m.id]||0).toLocaleString()}</strong></span>
-        <span style="color:${cls==='pos'?'var(--green)':cls==='neg'?'var(--red)':'var(--muted)'};">${label}</span>
-      </div>
-    </div>`;
-  }).join('');
-  document.getElementById('summaryArea').innerHTML = summaryCards +
-    `<div class="summary-total"><span>總支出</span><span>NT$ ${Math.round(totalPaid).toLocaleString()}</span></div>`;
-
-  // Settle debts (greedy algorithm)
-  const creditors = [], debtors = [];
-  state.members.forEach(m => {
-    if (net[m.id] > 0.005) creditors.push({ id: m.id, name: m.name, amt: net[m.id] });
-    if (net[m.id] < -0.005) debtors.push({ id: m.id, name: m.name, amt: -net[m.id] });
-  });
-
-  const txs = [];
-  let ci = 0, di = 0;
-  while (ci < creditors.length && di < debtors.length) {
-    const c = creditors[ci], d = debtors[di];
-    const amt = Math.min(c.amt, d.amt);
-    txs.push({ from: d.name, to: c.name, amount: Math.round(amt) });
-    c.amt -= amt; d.amt -= amt;
-    if (c.amt < 0.005) ci++;
-    if (d.amt < 0.005) di++;
-  }
-
-  const resultEl = document.getElementById('resultArea');
-  const emptyEl = document.getElementById('resultEmpty');
-  if (txs.length === 0) {
-    resultEl.innerHTML = '';
-    emptyEl.style.display = '';
-  } else {
-    emptyEl.style.display = 'none';
-    resultEl.innerHTML = `<div class="result-card">
-      <div class="result-header">最少 ${txs.length} 筆轉帳搞定 🎯</div>
-      ${txs.map(t => `
-        <div class="result-row">
-          <span class="result-from">${t.from}</span>
-          <span class="result-arrow">→</span>
-          <span class="result-to">${t.to}</span>
-          <span class="result-amount">NT$${t.amount.toLocaleString()}</span>
-        </div>
-      `).join('')}
-    </div>`;
-  }
-
-  // 結算紀錄 — 列出所有支出
-  const settledSection = document.getElementById('settledSection');
-  const settledList = document.getElementById('settledList');
-  if (state.expenses.length > 0) {
-    settledSection.style.display = '';
-    const sorted = [...state.expenses].sort((a,b) => a.createdAt - b.createdAt);
-    settledList.innerHTML = sorted.map((e, i) => {
-      const payer = state.members.find(m => m.id === e.payerId);
-      const participants = e.splits.filter(s => s.amount > 0).map(s => {
-        const m = state.members.find(x => x.id === s.memberId);
-        return m ? `${m.name} NT$${Math.round(s.amount).toLocaleString()}` : '';
-      }).filter(Boolean).join('、');
-      return `<div class="settled-item">
-        <div class="settled-no">#${i+1}</div>
-        <div class="settled-body">
-          <div class="settled-desc">${e.desc}</div>
-          <div class="settled-meta">${payer?.name||'?'} 付了 <strong>NT$${e.amount.toLocaleString()}</strong></div>
-          <div class="settled-participants">${participants}</div>
-        </div>
-      </div>`;
-    }).join('');
-  } else {
-    settledSection.style.display = 'none';
-  }
 }
 
 // ── Inline settle ──
@@ -1324,76 +1275,11 @@ function toggleAddForm() {
   chevron.textContent = _addFormOpen ? '▲' : '▼';
 }
 
-// ── Toggle settled records ──
-function toggleSettled() {
-  const list = document.getElementById('settledList');
-  const chevron = document.getElementById('settledChevron');
-  const isOpen = list.style.display !== 'none';
-  list.style.display = isOpen ? 'none' : '';
-  chevron.textContent = isOpen ? '▶' : '▼';
-}
-
-// ── Member detail ──
-function showMemberDetail(memberId) {
-  const el = document.getElementById('memberDetail');
-  const m = state.members.find(x => x.id === memberId);
-  if (!m) return;
-
-  // Already open for this person → toggle off
-  if (el.dataset.openFor === memberId && el.style.display !== 'none') {
-    el.style.display = 'none';
-    el.dataset.openFor = '';
-    return;
-  }
-  el.dataset.openFor = memberId;
-  el.style.display = '';
-
-  // Expenses this person paid
-  const asPayer = state.expenses.filter(e => e.payerId === memberId);
-  // Expenses where this person owes something
-  const asParticipant = state.expenses.filter(e =>
-    e.payerId !== memberId && e.splits.some(s => s.memberId === memberId && s.amount > 0)
-  );
-
-  const payerRows = asPayer.map(e => {
-    const perMe = e.splits.find(s => s.memberId === memberId)?.amount || 0;
-    const others = e.amount - perMe;
-    return `<div class="detail-row">
-      <span class="detail-icon">💳</span>
-      <span class="detail-desc">${e.desc}</span>
-      <span class="detail-sub">先付 NT$${e.amount.toLocaleString()}，其他人欠你 NT$${others.toLocaleString()}</span>
-    </div>`;
-  }).join('');
-
-  const oweRows = asParticipant.map(e => {
-    const myAmt = e.splits.find(s => s.memberId === memberId)?.amount || 0;
-    const payer = state.members.find(x => x.id === e.payerId);
-    return `<div class="detail-row">
-      <span class="detail-icon">💸</span>
-      <span class="detail-desc">${e.desc}</span>
-      <span class="detail-sub">應付 ${payer?.name||'?'} NT$${myAmt.toLocaleString()}</span>
-    </div>`;
-  }).join('');
-
-  el.innerHTML = `
-    <div class="detail-card">
-      <div class="detail-header">
-        📋 ${m.name} 的明細
-        <span onclick="showMemberDetail('${memberId}')" style="cursor:pointer;float:right;opacity:0.4;font-size:13px;">✖ 關閉</span>
-      </div>
-      ${asPayer.length ? `<div class="detail-section-label">✅ 我先付了</div>${payerRows}` : ''}
-      ${asParticipant.length ? `<div class="detail-section-label">📌 我需要還</div>${oweRows}` : ''}
-      ${!asPayer.length && !asParticipant.length ? '<div style="color:var(--muted);font-size:13px;padding:8px 0;">這位成員沒有相關支出</div>' : ''}
-    </div>`;
-}
-
 // ── renderAll ──
 function renderAll() {
   renderMembers();
   renderExpenses();
   updatePayerSelect();
-  const activeTab = document.querySelector('.tab-btn.active');
-  if (activeTab && activeTab.textContent.includes('結算')) renderResult();
 }
 
 // ── Toast ──
@@ -1411,5 +1297,6 @@ function showToast(msg) {
   t._timer = setTimeout(() => t.style.opacity = '0', 2000);
 }
 </script>
+
 </body>
 </html>
