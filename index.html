@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Oops I Paid!</title>
+<title>Oops I paid!</title>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -470,10 +470,10 @@
 <!-- Trip modal -->
 <div id="tripModal">
   <div class="modal-box">
-    <h2>🗺️ 選擇行程</h2>
+    <h2>👥 選擇群組</h2>
     <div id="tripList"></div>
     <div class="input-row" style="margin-top:12px;">
-      <input id="newTripName" type="text" placeholder="新行程名稱…">
+      <input id="newTripName" type="text" placeholder="新群組名稱…">
       <button class="btn btn-accent" onclick="createTrip()">新增</button>
     </div>
   </div>
@@ -481,9 +481,9 @@
 
 <!-- Top bar -->
 <div id="topbar">
-  <h1>✈️ Oops I Paid!</h1>
+  <h1>✈️ Oops I paid!</h1>
   <div id="topbarRight">
-    <div id="tripNameDisplay" onclick="showTripModal()">點擊選擇行程 ▾</div>
+    <div id="tripNameDisplay" onclick="showTripModal()">點擊選擇群組 ▾</div>
     <div id="syncStatus">—</div>
   </div>
 </div>
@@ -598,7 +598,7 @@ requireAuth((user) => {
 let trips = [];
 
 async function loadTrips() {
-  const snap = await db.collection('trips').orderBy('createdAt','desc').get();
+  const snap = await db.collection('groups').orderBy('createdAt','desc').get();
   trips = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   if (trips.length === 0) {
     showTripModal();
@@ -616,12 +616,12 @@ function showTripModal() {
 function renderTripList() {
   const el = document.getElementById('tripList');
   if (trips.length === 0) {
-    el.innerHTML = '<div class="empty" style="padding:12px;">還沒有行程，新增一個開始吧！</div>';
+    el.innerHTML = '<div class="empty" style="padding:12px;">還沒有群組，新增一個開始吧！</div>';
     return;
   }
   el.innerHTML = trips.map(t => `
     <div class="trip-item ${t.id === state.tripId ? 'active' : ''}" onclick="selectTrip('${t.id}')">
-      <span>🗺️ <span id="tripLabel-${t.id}">${t.name}</span></span>
+      <span>👥 <span id="tripLabel-${t.id}">${t.name}</span></span>
       <span style="display:flex;align-items:center;gap:6px;">
         <span style="color:var(--muted);font-size:12px;">${t.memberCount||0} 人</span>
         <span onclick="event.stopPropagation();startRenameTrip('${t.id}')" style="cursor:pointer;font-size:14px;opacity:0.5;" title="重新命名">✏️</span>
@@ -633,11 +633,11 @@ function renderTripList() {
 async function startRenameTrip(id) {
   const trip = trips.find(t => t.id === id);
   if (!trip) return;
-  const newName = prompt('修改行程名稱：', trip.name);
+  const newName = prompt('修改群組名稱：', trip.name);
   if (!newName || newName.trim() === trip.name) return;
   const name = newName.trim();
   trip.name = name;
-  await db.collection('trips').doc(id).update({ name });
+  await db.collection('groups').doc(id).update({ name });
   if (state.tripId === id) {
     document.getElementById('tripNameDisplay').textContent = name;
   }
@@ -647,7 +647,7 @@ async function startRenameTrip(id) {
 async function createTrip() {
   const name = document.getElementById('newTripName').value.trim();
   if (!name) return;
-  const ref = await db.collection('trips').add({ name, createdAt: Date.now(), memberCount: 0 });
+  const ref = await db.collection('groups').add({ name, createdAt: Date.now(), memberCount: 0 });
   document.getElementById('newTripName').value = '';
   trips.unshift({ id: ref.id, name, memberCount: 0 });
   selectTrip(ref.id);
@@ -663,29 +663,36 @@ function selectTrip(id) {
 }
 
 // ── Firestore sync ──
+let _localWrite = false;   // 自己寫入時忽略回彈的 snapshot
+
 function subscribeToTrip(tripId) {
   if (unsubscribe) unsubscribe();
   setSyncStatus('同步中…');
-  unsubscribe = db.collection('trips').doc(tripId)
-    .onSnapshot(doc => {
+  unsubscribe = db.collection('groups').doc(tripId)
+    .onSnapshot({ includeMetadataChanges: true }, doc => {
       if (!doc.exists) return;
+      // 如果是自己剛寫的 pending write，跳過避免閃爍
+      if (doc.metadata.hasPendingWrites) return;
+      // 如果是 local cache 的即時回彈（自己寫入後馬上收到），也跳過
+      if (_localWrite) { _localWrite = false; return; }
       const data = doc.data();
       state.members = data.members || [];
       state.expenses = data.expenses || [];
       renderAll();
-      setSyncStatus('✅ 已同步 ' + new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}));
+      setSyncStatus('✅ ' + new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}));
     }, err => setSyncStatus('⚠️ 同步失敗'));
 }
 
 function saveToFirebase() {
   if (!state.tripId || !db) return;
+  _localWrite = true;
   setSyncStatus('儲存中…');
-  db.collection('trips').doc(state.tripId).update({
+  db.collection('groups').doc(state.tripId).update({
     members: state.members,
     expenses: state.expenses,
     memberCount: state.members.length,
   }).then(() => setSyncStatus('✅ 已儲存'))
-    .catch(() => setSyncStatus('⚠️ 儲存失敗'));
+    .catch(e => { _localWrite = false; setSyncStatus('⚠️ 儲存失敗'); });
 }
 
 function setSyncStatus(txt) {
