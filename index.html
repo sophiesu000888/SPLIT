@@ -629,7 +629,7 @@
 
 <!-- Top bar -->
 <div id="topbar">
-  <h1>✈️ Oops I paid!</h1>
+  <h1>💸 Oops I paid!</h1>
   <div id="topbarRight">
     <div id="tripNameDisplay" onclick="showTripModal()">點擊選擇群組 ▾</div>
     <div id="syncStatus">—</div>
@@ -767,36 +767,38 @@ let db = null;
 let unsubscribe = null;
 
 // ── Firebase init ──
-// Line WebView 不支援 Firebase Auth redirect，改用匿名登入
-function isLineWebView() {
-  return /Line/i.test(navigator.userAgent);
-}
+// requireAuth 裡的 onAuthStateChanged 在 Line WebView 會反覆觸發
+// 用 _appInited flag 確保 initApp 只執行一次
+let _appInited = false;
 
 function initApp() {
+  if (_appInited) return;
+  _appInited = true;
   db = firebase.firestore();
   loadTrips();
 }
 
-if (isLineWebView()) {
-  // 等 Firebase 初始化完成後匿名登入
-  firebase.auth().signInAnonymously()
-    .then(() => initApp())
-    .catch(() => initApp()); // 就算失敗也繼續（可能已登入）
-} else {
-  requireAuth((user) => initApp());
-}
+requireAuth((user) => initApp());
 
 // ── Trip management ──
 let trips = [];
 
+let _tripsLoaded = false;
 async function loadTrips() {
-  const snap = await db.collection('groups').orderBy('createdAt','desc').get();
-  trips = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  if (trips.length === 0) {
-    showTripModal();
-  } else {
-    renderTripList();
-    selectTrip(trips[0].id);
+  if (_tripsLoaded) return;
+  _tripsLoaded = true;
+  try {
+    const snap = await db.collection('groups').orderBy('createdAt','desc').get();
+    trips = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (trips.length === 0) {
+      showTripModal();
+    } else {
+      renderTripList();
+      selectTrip(trips[0].id);
+    }
+  } catch(e) {
+    _tripsLoaded = false; // 失敗才允許重試
+    setSyncStatus('⚠️ 載入失敗');
   }
 }
 
@@ -857,22 +859,37 @@ function selectTrip(id) {
 // ── Firestore sync ──
 let _localWrite = false;   // 自己寫入時忽略回彈的 snapshot
 
+const _isMobileApp = /iPhone|iPad|iPod|Android|Line/i.test(navigator.userAgent);
+
 function subscribeToTrip(tripId) {
-  if (unsubscribe) unsubscribe();
+  if (unsubscribe) { unsubscribe(); unsubscribe = null; }
   setSyncStatus('同步中…');
+
+  function applyDoc(doc) {
+    if (!doc.exists) return;
+    const data = doc.data();
+    state.members = data.members || [];
+    state.expenses = data.expenses || [];
+    state.settlements = data.settlements || [];
+    renderAll();
+    setSyncStatus('✅ ' + new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}));
+  }
+
+  if (_isMobileApp) {
+    // 手機/Line：一次性讀取，不用 onSnapshot 避免反覆觸發
+    db.collection('groups').doc(tripId).get()
+      .then(applyDoc)
+      .catch(() => setSyncStatus('⚠️ 載入失敗'));
+    unsubscribe = null;
+    return;
+  }
+
+  // 桌機：即時 onSnapshot
   unsubscribe = db.collection('groups').doc(tripId)
     .onSnapshot({ includeMetadataChanges: true }, doc => {
-      if (!doc.exists) return;
-      // 如果是自己剛寫的 pending write，跳過避免閃爍
       if (doc.metadata.hasPendingWrites) return;
-      // 如果是 local cache 的即時回彈（自己寫入後馬上收到），也跳過
       if (_localWrite) { _localWrite = false; return; }
-      const data = doc.data();
-      state.members = data.members || [];
-      state.expenses = data.expenses || [];
-      state.settlements = data.settlements || [];
-      renderAll();
-      setSyncStatus('✅ ' + new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}));
+      applyDoc(doc);
     }, err => setSyncStatus('⚠️ 同步失敗'));
 }
 
@@ -885,8 +902,11 @@ function saveToFirebase() {
     expenses: state.expenses,
     settlements: state.settlements,
     memberCount: state.members.length,
-  }).then(() => setSyncStatus('✅ 已儲存'))
-    .catch(e => { _localWrite = false; setSyncStatus('⚠️ 儲存失敗'); });
+  }).then(() => {
+    setSyncStatus('✅ 已儲存');
+    // 手機一次性模式：儲存完主動更新本地 state（不靠 onSnapshot）
+    if (_isMobileApp) { /* state 已是最新，不需重拉 */ }
+  }).catch(e => { _localWrite = false; setSyncStatus('⚠️ 儲存失敗'); });
 }
 
 function setSyncStatus(txt) {
