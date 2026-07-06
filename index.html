@@ -8,6 +8,7 @@
 <script type="module" id="fb-init">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, orderBy, query, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyBlv5DjkPUgsQIQXVX4eo83T9InmuOy8VE",
@@ -20,13 +21,25 @@ const FIREBASE_CONFIG = {
 
 const fbApp = initializeApp(FIREBASE_CONFIG);
 const _db = getFirestore(fbApp);
+const _auth = getAuth(fbApp);
 
 // 掛到 window 供頁面其他函式使用
 window._fbDb = _db;
 window._fbModular = { collection, doc, getDoc, getDocs, addDoc, updateDoc, orderBy, query, onSnapshot };
 
-// 不需要登入帳號，Firestore 初始化完成就直接可以用
-window.dispatchEvent(new CustomEvent('fb-ready'));
+// 不用登入畫面，背景自動用「匿名登入」滿足資料庫規則，使用者完全無感
+let _fbReadyFired = false;
+onAuthStateChanged(_auth, (user) => {
+  if (!user) {
+    signInAnonymously(_auth).catch(() => {
+      // 匿名登入失敗（例如專案沒開這個功能），還是讓 app 啟動，
+      // 讀寫可能會失敗但至少不會卡住畫面一直重整
+      if (!_fbReadyFired) { _fbReadyFired = true; window.dispatchEvent(new CustomEvent('fb-ready')); }
+    });
+    return;
+  }
+  if (!_fbReadyFired) { _fbReadyFired = true; window.dispatchEvent(new CustomEvent('fb-ready')); }
+});
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Kalam:wght@700&display=swap" rel="stylesheet">
