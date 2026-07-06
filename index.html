@@ -418,17 +418,38 @@ onAuthStateChanged(_auth, (user) => {
     font-size: 14px;
     border-bottom: 2px solid var(--border);
     color: var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .tx-flow-hint {
+    font-weight: 700;
+    font-size: 11.5px;
+    color: var(--muted);
+    white-space: nowrap;
   }
   .result-row {
     padding: 14px 16px;
     display: flex;
     align-items: center;
-    border-bottom: 1px solid #eee;
     font-size: 16px;
     font-weight: 700;
     gap: 6px;
   }
-  .result-row:last-child { border-bottom: none; }
+  .tx-item { border-bottom: 1px solid #eee; }
+  .tx-item:last-child { border-bottom: none; }
+  .tx-flow {
+    padding: 2px 16px 14px;
+    background: #f7f9fc;
+  }
+  .tx-flow-line {
+    font-size: 12.5px;
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: 4px;
+  }
+  .tx-flow-line:last-child { margin-bottom: 0; }
   .result-from { flex: 1; }
   .result-arrow { color: var(--accent2); font-size: 20px; }
   .result-to { flex: 1; text-align: right; }
@@ -580,8 +601,9 @@ onAuthStateChanged(_auth, (user) => {
     text-align: center;
   }
   .settle-view-btn.active { background: var(--accent); }
+  .settle-content { padding: 6px 12px 14px; }
   .settle-view-back {
-    padding: 10px 12px 0;
+    padding: 4px 0 6px;
     font-size: 13px;
     font-weight: 900;
     color: var(--blue);
@@ -1151,6 +1173,15 @@ function removeExpense(id) {
   renderExpenses();
 }
 
+function toggleAllTxFlow(headerEl) {
+  const card = headerEl.closest('.result-card');
+  const flows = card.querySelectorAll('.tx-flow');
+  const hint = headerEl.querySelector('.tx-flow-hint');
+  const opening = flows.length && flows[0].style.display === 'none';
+  flows.forEach(f => { f.style.display = opening ? 'block' : 'none'; });
+  if (hint) hint.textContent = opening ? '收起來 ▴' : '點看怎麼算的 ▾';
+}
+
 // 計算一組支出的個人小計＋誰該付給誰，回傳 HTML 字串
 function calcSettlementHTML(exps) {
   if (!exps.length) return '<div class="empty" style="padding:20px;"><div>📭</div>沒有支出資料</div>';
@@ -1191,15 +1222,19 @@ function calcSettlementHTML(exps) {
   // greedy 轉帳建議
   const creditors = [], debtors = [];
   state.members.forEach(m => {
-    if (net[m.id] > 0.005) creditors.push({ id: m.id, name: m.name, amt: net[m.id] });
-    if (net[m.id] < -0.005) debtors.push({ id: m.id, name: m.name, amt: -net[m.id] });
+    if (net[m.id] > 0.005) creditors.push({ id: m.id, name: m.name, amt: net[m.id], total: net[m.id] });
+    if (net[m.id] < -0.005) debtors.push({ id: m.id, name: m.name, amt: -net[m.id], total: -net[m.id] });
   });
   const txs = [];
   let ci = 0, di = 0;
   while (ci < creditors.length && di < debtors.length) {
     const c = creditors[ci], d = debtors[di];
     const amt = Math.min(c.amt, d.amt);
-    txs.push({ from: d.name, to: c.name, amount: Math.round(amt) });
+    txs.push({
+      from: d.name, to: c.name, amount: Math.round(amt),
+      fromTotal: Math.round(d.total), fromBefore: Math.round(d.amt),
+      toTotal: Math.round(c.total), toBefore: Math.round(c.amt)
+    });
     c.amt -= amt; d.amt -= amt;
     if (c.amt < 0.005) ci++;
     if (d.amt < 0.005) di++;
@@ -1208,13 +1243,25 @@ function calcSettlementHTML(exps) {
   const resultHtml = txs.length === 0
     ? '<div class="empty" style="padding:20px;"><div>🎉</div>大家都算清楚了！</div>'
     : `<div class="result-card">
-        <div class="result-header">最少 ${txs.length} 筆轉帳搞定 🎯</div>
-        ${txs.map(t => `
-          <div class="result-row">
-            <span class="result-from">${t.from}</span>
-            <span class="result-arrow">→</span>
-            <span class="result-to">${t.to}</span>
-            <span class="result-amount">NT$${t.amount.toLocaleString()}</span>
+        <div class="result-header" onclick="toggleAllTxFlow(this)" style="cursor:pointer;">
+          <span>最少 ${txs.length} 筆轉帳搞定 🎯</span>
+          <span class="tx-flow-hint">點看怎麼算的 ▾</span>
+        </div>
+        ${txs.map((t, i) => `
+          <div class="tx-item">
+            <div class="result-row">
+              <span class="result-from">${t.from}</span>
+              <span class="result-arrow">→</span>
+              <span class="result-to">${t.to}</span>
+              <span class="result-amount">NT$${t.amount.toLocaleString()}</span>
+            </div>
+            <div class="tx-flow" style="display:none;">
+              <div class="tx-flow-line">${t.from} 目前欠大家 <b>NT$${t.fromBefore.toLocaleString()}</b></div>
+              <div class="tx-flow-line">${t.to} 目前可以收回 <b>NT$${t.toBefore.toLocaleString()}</b></div>
+              <div class="tx-flow-line">所以 ${t.from} 先付 <b>NT$${t.amount.toLocaleString()}</b> 給 ${t.to}</div>
+              ${(t.fromBefore - t.amount > 0) ? `<div class="tx-flow-line">${t.from} 付完還欠 NT$${(t.fromBefore - t.amount).toLocaleString()}，會付給別人</div>` : ''}
+              ${(t.toBefore - t.amount > 0) ? `<div class="tx-flow-line">${t.to} 收完還能收 NT$${(t.toBefore - t.amount).toLocaleString()}，會由別人補上</div>` : ''}
+            </div>
           </div>
         `).join('')}
       </div>`;
@@ -1341,9 +1388,9 @@ function settlementBodyContent(sid, exps) {
   }
   const back = `<span class="settle-view-back" onclick="event.stopPropagation();backToSettleChooser('${sid}')">‹ 返回選擇</span>`;
   if (st.view === 'calc') {
-    return back + calcSettlementHTML(exps);
+    return `<div class="settle-content">${back}${calcSettlementHTML(exps)}</div>`;
   }
-  return back + `<div class="sec-title">🧾 支出明細</div>${exps.map(e => expReceiptHTML(e, false)).join('')}`;
+  return `<div class="settle-content">${back}<div class="sec-title" style="margin-top:0;">🧾 支出明細</div>${exps.map(e => expReceiptHTML(e, false)).join('')}</div>`;
 }
 
 function toggleSettlementGroup(sid) {
