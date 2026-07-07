@@ -397,6 +397,19 @@ onAuthStateChanged(_auth, (user) => {
     padding: 10px 16px 14px;
     border-top: 1px dashed #e0e0e0;
   }
+  .flow-block { margin-bottom: 10px; }
+  .flow-block:last-child { margin-bottom: 0; }
+  .flow-block-title {
+    font-weight: 900;
+    font-size: 12px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .flow-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+  }
   .summary-total {
     background: #fffde7;
     border: 2px solid var(--border);
@@ -1223,11 +1236,26 @@ function calcSettlementHTML(exps) {
     const label = n > 0.5 ? '別人欠你' : n < -0.5 ? '你欠別人' : '已結清';
     const sign = n > 0.5 ? '＋' : '';
     const diff = Math.abs(Math.round(n));
-    const explain = n > 0.5
-      ? `已付 NT$${Math.round(paid[m.id]||0).toLocaleString()} － 應攤 NT$${Math.round(owed[m.id]||0).toLocaleString()} = 多付了 NT$${diff.toLocaleString()}，別人欠你這麼多`
-      : n < -0.5
-        ? `應攤 NT$${Math.round(owed[m.id]||0).toLocaleString()} － 已付 NT$${Math.round(paid[m.id]||0).toLocaleString()} = 少付了 NT$${diff.toLocaleString()}，你欠別人這麼多`
-        : `已付 NT$${Math.round(paid[m.id]||0).toLocaleString()} 剛好等於應攤 NT$${Math.round(owed[m.id]||0).toLocaleString()}，不用再付`;
+    const paidItems = exps.filter(e => e.payerId === m.id);
+    const owedItems = exps
+      .map(e => ({ e, s: e.splits.find(s => s.memberId === m.id) }))
+      .filter(x => x.s && x.s.amount > 0.005);
+    const paidListHtml = paidItems.length
+      ? paidItems.map(e => `<div class="flow-item"><span>${e.desc}</span><span>NT$${Math.round(e.amount).toLocaleString()}</span></div>`).join('')
+      : '<div class="flow-item" style="color:var(--muted);">（沒有代墊）</div>';
+    const owedListHtml = owedItems.length
+      ? owedItems.map(({e,s}) => `<div class="flow-item"><span>${e.desc}</span><span>NT$${Math.round(s.amount).toLocaleString()}</span></div>`).join('')
+      : '<div class="flow-item" style="color:var(--muted);">（沒有分攤到）</div>';
+    const explain = `
+      <div class="flow-block">
+        <div class="flow-block-title">已付明細（共 NT$${Math.round(paid[m.id]||0).toLocaleString()}）</div>
+        ${paidListHtml}
+      </div>
+      <div class="flow-block">
+        <div class="flow-block-title">應攤明細（共 NT$${Math.round(owed[m.id]||0).toLocaleString()}）</div>
+        ${owedListHtml}
+      </div>
+    `;
     return `<div class="summary-card">
       <div class="summary-card-header">
         <span class="summary-name">${m.name}</span>
